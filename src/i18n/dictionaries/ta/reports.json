@@ -7,8 +7,13 @@
   "byMember": "உறுப்பினரின்படி",
   "timeline": "காலவரிசை",
   "exportPDF": "PDF ஆக ஏற்றுமதி",
+  "downloadPDF": "PDF பதிவிறக்கம்",
+  "printPreview": "அச்சிடு / முன்னோட்டம்",
+  "sharePDF": "PDF பகிர்",
   "exportCSV": "CSV ஆக ஏற்றுமதி",
   "shareReport": "அறிக்கையை பகிர்",
+  "viewReport": "அறிக்கை பார்",
+  "generateReport": "அறிக்கை உருவாக்கு",
   "aiSummary": "AI சுருக்கம்",
   "generatingSummary": "சுருக்கம் உருவாக்குகிறது…",
   "topSpender": "அதிகம் செலவு செய்தவர்",
@@ -17,6 +22,15 @@
   "savingsInsight": "சேமிப்பு நுண்ணறிவு",
   "totalTrips": "மொத்த பயணங்கள்",
   "totalSpent": "மொத்தம் செலவு",
-  "currency": "₹"
+  "currency": "₹",
+  "memberBalances": "உறுப்பினர் நிகர இருப்பு",
+  "settlementTransactions": "தீர்வு பரிவர்த்தனைகள்",
+  "creditor": "கடன் வரவு",
+  "debtor": "கடன்படுவோர்",
+  "netBalance": "நிகர இருப்பு",
+  "pdfGenerating": "PDF உருவாக்குகிறது…",
+  "pdfSuccess": "PDF பதிவிறக்கம் தோடங்கியது!",
+  "pdfError": "PDF உருவாக்குவதில் பிழை",
+  "auditReport": "பயண தணிக்கை அறிக்கை",
+  "legalDisclaimer": "இந்த அறிக்கை வழித்துணை பயன்பாட்டால் தானாக உருவாக்கப்பட்டது. இது தணிக்கை நோக்கங்களுக்காக மட்டுமே. தனிப்பட்ட சரிபார்வ்வை மேற்கொள்ளுங்கள்."
 }
-

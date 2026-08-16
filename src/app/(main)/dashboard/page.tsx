@@ -23,6 +23,7 @@ import {
   Sparkles,
   Wallet,
   Route,
+  FileText,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
