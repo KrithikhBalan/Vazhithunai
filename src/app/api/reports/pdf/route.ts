@@ -7,6 +7,7 @@ import React from "react";
 import { registerPdfFonts } from "@/lib/pdfFonts";
 import { fetchTripReportData } from "@/lib/tripReportData";
 import { TripReportDocument } from "@/components/pdf/TripReportDocument";
+import { checkRateLimit, getClientIp } from "@/lib/aiRateLimit";
 
 export const runtime = "nodejs"; // Must be Node.js — pdf-lib and canvas don't run on Edge
 
@@ -19,6 +20,16 @@ export const runtime = "nodejs"; // Must be Node.js — pdf-lib and canvas don't
  *             "0" (default) triggers Content-Disposition: inline (browser preview)
  */
 export async function GET(req: NextRequest): Promise<NextResponse> {
+  // Rate limit: 15 PDF exports per minute per IP
+  const ip = getClientIp(req);
+  const rl = checkRateLimit(`pdf_report:${ip}`, 15, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Rate limit exceeded. Please wait a moment before downloading another report." },
+      { status: 429, headers: { "X-RateLimit-Reset": String(Math.ceil(rl.resetAt / 1000)) } }
+    );
+  }
+
   const { searchParams } = req.nextUrl;
   const tripId = searchParams.get("tripId");
   const lang = (searchParams.get("lang") === "ta" ? "ta" : "en") as "ta" | "en";
