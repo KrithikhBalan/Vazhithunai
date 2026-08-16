@@ -5,7 +5,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { ConfirmationResult } from "firebase/auth";
-import { getOrInitRecaptcha, clearRecaptcha, sendOTP, confirmOTP } from "@/lib/firebase/auth";
+import { createFreshRecaptcha, clearRecaptcha, sendOTP, confirmOTP } from "@/lib/firebase/auth";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
@@ -61,7 +61,8 @@ export function PhoneOTPForm() {
 
     setLoading(true);
     try {
-      const verifier = getOrInitRecaptcha(recaptchaContainerId);
+      // Create a fresh, pristine verifier instance
+      const verifier = createFreshRecaptcha(recaptchaContainerId);
       const result = await sendOTP(e164, verifier);
       setConfirmationResult(result);
       setStep("otp");
@@ -77,8 +78,8 @@ export function PhoneOTPForm() {
       if (errObj.code === "auth/operation-not-allowed") {
         toast.error(
           lang === "ta"
-            ? "Firebase Console-ல் 'Phone' முறை இயக்கப்படவில்லை அல்லது SMS Region அனுமதிக்கப்படவில்லை."
-            : "Phone sign-in is disabled or SMS region is restricted. Check Firebase Console.",
+            ? "Firebase Console-ல் 'Phone' முறை அல்லது SMS Region அனுமதிக்கப்படவில்லை."
+            : "Phone sign-in is disabled or SMS region restricted in Firebase Console.",
           { duration: 8000 }
         );
       } else if (errObj.code === "auth/invalid-phone-number") {
