@@ -34,7 +34,6 @@ async function runManualAudit() {
   });
   const page = await context.newPage();
 
-  // Listen to console errors
   page.on("console", (msg) => {
     if (msg.type() === "error") {
       console.log(`[Browser Console Error]: ${msg.text()}`);
@@ -44,7 +43,8 @@ async function runManualAudit() {
   try {
     // ─── 1. SPLASH SCREEN (SCR-01) ───
     console.log("\n[1] Testing Splash & Language Selection Screen (SCR-01)...");
-    await page.goto("http://localhost:3000/splash", { waitUntil: "networkidle" });
+    await page.goto("http://localhost:3000/splash", { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(600);
     const splashShot = path.join(SCREENSHOT_DIR, "01_splash_en.png");
     await page.screenshot({ path: splashShot });
     auditLogs.push({
@@ -74,10 +74,12 @@ async function runManualAudit() {
     // Click Get Started
     const getStartedBtn = page.locator("#get-started-btn");
     await getStartedBtn.click();
-    await page.waitForURL("**/login");
+    await page.waitForTimeout(500);
 
     // ─── 2. LOGIN SCREEN (SCR-02) ───
     console.log("\n[2] Testing Login & Auth Screen (SCR-02)...");
+    await page.goto("http://localhost:3000/login", { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(500);
     const loginShot = path.join(SCREENSHOT_DIR, "02_login_form.png");
     await page.screenshot({ path: loginShot });
 
@@ -109,7 +111,8 @@ async function runManualAudit() {
 
     // ─── 3. MAIN DASHBOARD (SCR-03) ───
     console.log("\n[3] Testing Main Dashboard (SCR-03)...");
-    await page.goto("http://localhost:3000/dashboard", { waitUntil: "networkidle" });
+    await page.goto("http://localhost:3000/dashboard", { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(600);
     const dashShot = path.join(SCREENSHOT_DIR, "03_dashboard.png");
     await page.screenshot({ path: dashShot });
     auditLogs.push({
@@ -123,7 +126,8 @@ async function runManualAudit() {
 
     // ─── 4. EXPLORE PLACES (SCR-06) ───
     console.log("\n[4] Testing Explore Places Screen (SCR-06)...");
-    await page.goto("http://localhost:3000/explore", { waitUntil: "networkidle" });
+    await page.goto("http://localhost:3000/explore", { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(500);
     const searchInput = page.locator("input[type='text']").first();
     await searchInput.fill("Ooty");
     await page.waitForTimeout(300);
@@ -140,7 +144,8 @@ async function runManualAudit() {
 
     // ─── 5. PLACE DETAILS (SCR-07) ───
     console.log("\n[5] Testing Place Details Screen (SCR-07)...");
-    await page.goto("http://localhost:3000/explore/ooty-botanical-gardens", { waitUntil: "networkidle" });
+    await page.goto("http://localhost:3000/explore/ooty-botanical-gardens", { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(500);
     const placeDetailShot = path.join(SCREENSHOT_DIR, "05_place_details.png");
     await page.screenshot({ path: placeDetailShot });
     auditLogs.push({
@@ -154,7 +159,8 @@ async function runManualAudit() {
 
     // ─── 6. HOTEL DISCOVERY (SCR-09) ───
     console.log("\n[6] Testing Hotel Discovery Screen (SCR-09)...");
-    await page.goto("http://localhost:3000/explore/hotels", { waitUntil: "networkidle" });
+    await page.goto("http://localhost:3000/explore/hotels", { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(500);
     const hotelsShot = path.join(SCREENSHOT_DIR, "06_hotels.png");
     await page.screenshot({ path: hotelsShot });
     auditLogs.push({
@@ -168,7 +174,8 @@ async function runManualAudit() {
 
     // ─── 7. EMERGENCY HELP SERVICES (SCR-08) ───
     console.log("\n[7] Testing Emergency Help Services (SCR-08)...");
-    await page.goto("http://localhost:3000/explore/help", { waitUntil: "networkidle" });
+    await page.goto("http://localhost:3000/explore/help", { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(500);
     const hospitalPill = page.locator("button:has-text('Hospital'), button:has-text('மருத்துவமனை')").first();
     if (await hospitalPill.isVisible()) {
       await hospitalPill.click();
@@ -187,7 +194,8 @@ async function runManualAudit() {
 
     // ─── 8. ROUTE & TRAVEL COST CALCULATOR (SCR-10) ───
     console.log("\n[8] Testing Route & Travel Cost Calculator (SCR-10)...");
-    await page.goto("http://localhost:3000/trips/demo-trip/route", { waitUntil: "networkidle" });
+    await page.goto("http://localhost:3000/trips/demo-trip/route", { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(500);
     const suvBtn = page.locator("button:has-text('SUV'), button:has-text('எஸ்.யு.வி')").first();
     if (await suvBtn.isVisible()) {
       await suvBtn.click();
@@ -206,7 +214,8 @@ async function runManualAudit() {
 
     // ─── 9. EXPENSE LEDGER (SCR-11) ───
     console.log("\n[9] Testing Expense Ledger Screen (SCR-11)...");
-    await page.goto("http://localhost:3000/trips/demo-trip/expenses", { waitUntil: "networkidle" });
+    await page.goto("http://localhost:3000/trips/demo-trip/expenses", { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(500);
     const ledgerShot = path.join(SCREENSHOT_DIR, "09_expense_ledger.png");
     await page.screenshot({ path: ledgerShot });
     auditLogs.push({
@@ -220,7 +229,8 @@ async function runManualAudit() {
 
     // ─── 10. ADD EXPENSE (SCR-12) ───
     console.log("\n[10] Testing Add Expense Form & 4 Split Modes (SCR-12)...");
-    await page.goto("http://localhost:3000/trips/demo-trip/expenses/new", { waitUntil: "networkidle" });
+    await page.goto("http://localhost:3000/trips/demo-trip/expenses/new", { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(500);
     const amountInput = page.locator("#expense-amount-input");
     await amountInput.fill("600.00");
     const descInput = page.locator("#expense-desc-input");
@@ -243,7 +253,8 @@ async function runManualAudit() {
 
     // ─── 11. SETTLEMENT ENGINE & UPI (SCR-13) ───
     console.log("\n[11] Testing Settlement Engine & UPI Screen (SCR-13)...");
-    await page.goto("http://localhost:3000/trips/demo-trip/settlement", { waitUntil: "networkidle" });
+    await page.goto("http://localhost:3000/trips/demo-trip/settlement", { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(500);
     const settleShot = path.join(SCREENSHOT_DIR, "11_settlement_engine.png");
     await page.screenshot({ path: settleShot });
     auditLogs.push({
@@ -257,7 +268,8 @@ async function runManualAudit() {
 
     // ─── 12. BILINGUAL PDF REPORT (SCR-14) ───
     console.log("\n[12] Testing Bilingual PDF Report View (SCR-14)...");
-    await page.goto("http://localhost:3000/trips/demo-trip/report", { waitUntil: "networkidle" });
+    await page.goto("http://localhost:3000/trips/demo-trip/report", { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(500);
     const expTab = page.locator("button:has-text('Expenses'), button:has-text('செலவுகள்')").first();
     if (await expTab.isVisible()) {
       await expTab.click();
@@ -276,7 +288,8 @@ async function runManualAudit() {
 
     // ─── 13. AI SPENDING ASSISTANT (SCR-15) ───
     console.log("\n[13] Testing AI Assistant Screen (SCR-15)...");
-    await page.goto("http://localhost:3000/trips/demo-trip/ai", { waitUntil: "networkidle" });
+    await page.goto("http://localhost:3000/trips/demo-trip/ai", { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(500);
     const chatInput = page.locator("input[type='text']").last();
     await chatInput.fill("Who paid the highest amount in our trip?");
     const aiShot = path.join(SCREENSHOT_DIR, "13_ai_assistant.png");
@@ -292,7 +305,8 @@ async function runManualAudit() {
 
     // ─── 14. PROFILE & SETTINGS (SCR-15) ───
     console.log("\n[14] Testing Profile & Settings Screen (SCR-15)...");
-    await page.goto("http://localhost:3000/profile", { waitUntil: "networkidle" });
+    await page.goto("http://localhost:3000/profile", { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(500);
     const hdfcChip = page.locator("button:has-text('@okhdfcbank')").first();
     if (await hdfcChip.isVisible()) {
       await hdfcChip.click();
