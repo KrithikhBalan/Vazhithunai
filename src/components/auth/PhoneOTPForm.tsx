@@ -1,11 +1,17 @@
-// Purpose: UI Component for Phone Number OTP authentication flow (Phone input with +91 prefix, invisible reCAPTCHA, 6-digit auto-advancing OTP input, and verification).
+// Purpose: UI Component for Phone Number OTP authentication flow (Phone input with +91 prefix, invisible reCAPTCHA with single instance lifecycle, 6-digit auto-advancing OTP input, and error translation).
 
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import type { ConfirmationResult } from "firebase/auth";
-import { createFreshRecaptcha, clearRecaptcha, sendOTP, confirmOTP } from "@/lib/firebase/auth";
+import type { ConfirmationResult, RecaptchaVerifier } from "firebase/auth";
+import {
+  getOrCreateRecaptchaVerifier,
+  cleanupRecaptchaVerifier,
+  sendOTP,
+  confirmOTP,
+  getFriendlyAuthErrorMessage,
+} from "@/lib/firebase/auth";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
@@ -26,7 +32,8 @@ export function PhoneOTPForm() {
   const [countdown, setCountdown] = useState(0);
 
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const recaptchaContainerId = "recaptcha-container";
+  const containerRef = useRef<HTMLDivElement>(null);
+  const verifierRef = useRef<RecaptchaVerifier | null>(null);
 
   // Countdown timer for resend OTP
   useEffect(() => {
@@ -35,74 +42,96 @@ export function PhoneOTPForm() {
     return () => clearTimeout(timer);
   }, [countdown]);
 
+  // Clean up reCAPTCHA verifier on unmount
   useEffect(() => {
     return () => {
-      clearRecaptcha(recaptchaContainerId);
+      if (verifierRef.current) {
+        try {
+          verifierRef.current.clear();
+        } catch {
+          // Ignored
+        }
+        verifierRef.current = null;
+      }
+      cleanupRecaptchaVerifier();
     };
   }, []);
 
   // ─── Send OTP ───────────────────────────────────────────────────────────────
 
   const handleSendOTP = useCallback(async () => {
+    if (loading) return; // Prevent duplicate concurrent requests
+
     const cleaned = phone.trim();
     if (!cleaned) {
       toast.error(lang === "ta" ? "தொலைபேசி எண்ணை உள்ளிடவும்" : "Enter your phone number");
       return;
     }
-    const e164 = cleaned.startsWith("+") ? cleaned : `+91${cleaned}`;
-    if (!/^\+91[6-9]\d{9}$/.test(e164)) {
+
+    // Strictly validate Indian 10-digit number
+    if (!/^[6-9]\d{9}$/.test(cleaned)) {
       toast.error(
         lang === "ta"
-          ? "செல்லுபடியாகும் இந்திய தொலைபேசி எண்ணை உள்ளிடவும் (10 இலக்கங்கள்)"
-          : "Enter a valid 10-digit Indian mobile number"
+          ? "செல்லுபடியாகும் இந்திய தொலைபேசி எண்ணை உள்ளிடவும் (10 இலக்கங்கள், 6-9 இல் தொடங்கும்)"
+          : "Enter a valid 10-digit Indian mobile number starting with 6-9"
       );
       return;
     }
 
+    const e164 = `+91${cleaned}`;
     setLoading(true);
+
     try {
-      // Create a fresh, pristine verifier instance
-      const verifier = createFreshRecaptcha(recaptchaContainerId);
-      const result = await sendOTP(e164, verifier);
+      if (!containerRef.current) {
+        throw new Error("reCAPTCHA container element not mounted.");
+      }
+
+      // Reuse or lazily create a single verifier instance
+      if (!verifierRef.current) {
+        verifierRef.current = getOrCreateRecaptchaVerifier(containerRef.current, () => {
+          // If expired, clean instance so next click refreshes
+          if (verifierRef.current) {
+            try {
+              verifierRef.current.clear();
+            } catch {}
+            verifierRef.current = null;
+          }
+        });
+      }
+
+      const result = await sendOTP(e164, verifierRef.current);
       setConfirmationResult(result);
       setStep("otp");
-      setCountdown(30);
+      setCountdown(60);
       toast.success(
-        lang === "ta" ? `${e164} க்கு OTP அனுப்பப்பட்டது` : `OTP sent to ${e164}`
+        lang === "ta" ? `${e164} க்கு OTP வெற்றிகரமாக அனுப்பப்பட்டது` : `OTP sent successfully to ${e164}`
       );
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
-    } catch (err: unknown) {
-      const errObj = err as { code?: string; message?: string };
-      console.error("sendOTP error:", err);
+    } catch (err: any) {
+      console.error("[Auth] sendOTP error:", err);
+      const friendlyMsg = getFriendlyAuthErrorMessage(err?.code, lang);
+      toast.error(friendlyMsg, { duration: 6000 });
 
-      if (errObj.code === "auth/operation-not-allowed") {
-        toast.error(
-          lang === "ta"
-            ? "Firebase Console-ல் 'Phone' முறை அல்லது SMS Region அனுமதிக்கப்படவில்லை."
-            : "Phone sign-in is disabled or SMS region restricted in Firebase Console.",
-          { duration: 8000 }
-        );
-      } else if (errObj.code === "auth/invalid-phone-number") {
-        toast.error(lang === "ta" ? "தவறான தொலைபேசி எண் வடிவம்." : "Invalid phone number format.");
-      } else if (errObj.code === "auth/too-many-requests") {
-        toast.error(
-          lang === "ta"
-            ? "அதிகப்படியான முயற்சிகள். சிறிது நேரம் கழித்து முயற்சிக்கவும்."
-            : "Too many attempts. Please try again later."
-        );
-      } else {
-        const msg = errObj.message || "Failed to send OTP";
-        toast.error(msg);
+      // If reCAPTCHA token failed or was invalid, reset verifier instance
+      if (err?.code === "auth/captcha-check-failed" || err?.code === "auth/too-many-requests") {
+        if (verifierRef.current) {
+          try {
+            verifierRef.current.clear();
+          } catch {}
+          verifierRef.current = null;
+        }
+        cleanupRecaptchaVerifier();
       }
-      clearRecaptcha(recaptchaContainerId);
     } finally {
       setLoading(false);
     }
-  }, [phone, lang]);
+  }, [phone, loading, lang]);
 
   // ─── Confirm OTP ────────────────────────────────────────────────────────────
 
   const handleConfirmOTP = useCallback(async () => {
+    if (loading) return; // In-flight guard
+
     const code = otp.join("");
     if (code.length !== 6) {
       toast.error(lang === "ta" ? "6 இலக்க OTP ஐ உள்ளிடவும்" : "Enter the 6-digit OTP");
@@ -115,21 +144,16 @@ export function PhoneOTPForm() {
       await confirmOTP(confirmationResult, code);
       toast.success(lang === "ta" ? "வெற்றிகரமாக உள்நுழைந்தது!" : "Signed in successfully!");
       router.push("/dashboard");
-    } catch (err: unknown) {
-      const errObj = err as { code?: string };
-      if (errObj.code === "auth/invalid-verification-code") {
-        toast.error(lang === "ta" ? "தவறான OTP குறியீடு. மீண்டும் சரிபார்க்கவும்." : "Invalid OTP code. Please check and try again.");
-      } else if (errObj.code === "auth/code-expired") {
-        toast.error(lang === "ta" ? "OTP காலாவதியாகிவிட்டது. புதிய OTP அனுப்பவும்." : "OTP has expired. Please request a new one.");
-      } else {
-        toast.error(lang === "ta" ? "சரிபார்ப்பில் தோல்வி. மீண்டும் முயற்சிக்கவும்." : "Verification failed. Please try again.");
-      }
+    } catch (err: any) {
+      console.error("[Auth] confirmOTP error:", err);
+      const friendlyMsg = getFriendlyAuthErrorMessage(err?.code, lang);
+      toast.error(friendlyMsg);
       setOtp(["", "", "", "", "", ""]);
       otpRefs.current[0]?.focus();
     } finally {
       setLoading(false);
     }
-  }, [otp, confirmationResult, router, lang]);
+  }, [otp, confirmationResult, loading, router, lang]);
 
   // ─── OTP input auto-advance ──────────────────────────────────────────────────
 
@@ -141,7 +165,7 @@ export function PhoneOTPForm() {
     if (digit && index < 5) {
       otpRefs.current[index + 1]?.focus();
     }
-    // Auto-submit when all 6 filled
+    // Auto-submit when all 6 digits are filled
     if (digit && index === 5 && newOtp.every(Boolean)) {
       setTimeout(handleConfirmOTP, 50);
     }
@@ -167,7 +191,6 @@ export function PhoneOTPForm() {
     setStep("phone");
     setOtp(["", "", "", "", "", ""]);
     setConfirmationResult(null);
-    clearRecaptcha(recaptchaContainerId);
   };
 
   // ─── Render ──────────────────────────────────────────────────────────────────
@@ -177,7 +200,7 @@ export function PhoneOTPForm() {
       {step === "phone" ? (
         <div className="animate-fade-in-up space-y-4">
           {/* Phone label */}
-          <label className="block text-sm font-medium text-gray-300">
+          <label htmlFor="phone-input" className="block text-sm font-medium text-gray-300">
             {lang === "ta" ? "தொலைபேசி எண்" : "Mobile Number"}
           </label>
 
@@ -193,7 +216,7 @@ export function PhoneOTPForm() {
               type="tel"
               inputMode="numeric"
               autoComplete="tel"
-              placeholder={lang === "ta" ? "98765 43210" : "98765 43210"}
+              placeholder="98765 43210"
               value={phone}
               onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
               onKeyDown={(e) => e.key === "Enter" && handleSendOTP()}
@@ -210,6 +233,7 @@ export function PhoneOTPForm() {
           {/* Send OTP button */}
           <button
             id="send-otp-btn"
+            type="button"
             onClick={handleSendOTP}
             disabled={loading || phone.length < 10}
             className={cn(
@@ -228,7 +252,7 @@ export function PhoneOTPForm() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                {lang === "ta" ? "அனுப்புகிறது…" : "Sending…"}
+                {lang === "ta" ? "அனுப்புகிறது…" : "Sending OTP…"}
               </span>
             ) : (
               <>
@@ -244,7 +268,7 @@ export function PhoneOTPForm() {
             <Shield className="h-3 w-3" />
             {lang === "ta"
               ? "உங்கள் எண் பாதுகாப்பாக சரிபார்க்கப்படுகிறது"
-              : "Your number is verified securely — never stored"}
+              : "Your number is verified securely via Firebase"}
           </p>
         </div>
       ) : (
@@ -254,7 +278,7 @@ export function PhoneOTPForm() {
             <p className="text-sm text-gray-300 mb-1">
               {lang === "ta" ? "OTP அனுப்பப்பட்டது" : "OTP sent to"}
             </p>
-            <p className="font-semibold text-white">+91 {phone}</p>
+            <p className="font-semibold text-white font-mono">+91 {phone}</p>
           </div>
 
           {/* OTP boxes */}
@@ -266,7 +290,9 @@ export function PhoneOTPForm() {
               <input
                 key={i}
                 id={`otp-${i}`}
-                ref={(el) => { otpRefs.current[i] = el; }}
+                ref={(el) => {
+                  otpRefs.current[i] = el;
+                }}
                 type="text"
                 inputMode="numeric"
                 maxLength={1}
@@ -282,6 +308,7 @@ export function PhoneOTPForm() {
           {/* Verify button */}
           <button
             id="verify-otp-btn"
+            type="button"
             onClick={handleConfirmOTP}
             disabled={loading || otp.some((d) => !d)}
             className={cn(
@@ -321,6 +348,7 @@ export function PhoneOTPForm() {
             ) : (
               <button
                 id="resend-otp-btn"
+                type="button"
                 onClick={handleResend}
                 className="flex items-center gap-1 text-teal-400 hover:text-teal-300 transition-colors"
               >
@@ -332,8 +360,8 @@ export function PhoneOTPForm() {
         </div>
       )}
 
-      {/* Invisible reCAPTCHA mount point */}
-      <div id={recaptchaContainerId} />
+      {/* Invisible reCAPTCHA mount point attached via React ref */}
+      <div ref={containerRef} id="recaptcha-container" />
     </div>
   );
 }

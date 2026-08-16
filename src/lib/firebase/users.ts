@@ -1,4 +1,4 @@
-// Purpose: Firestore operations for the 'users' collection (creating user profiles, real-time sync, and updating user preferences).
+// Purpose: Firestore operations for the 'users' collection (creating user profiles, real-time sync, and updating user preferences with robust error handling).
 
 import {
   doc,
@@ -22,27 +22,33 @@ export async function upsertUser(
   firebaseUser: User,
   languagePreference: Language = "en"
 ): Promise<void> {
+  if (!firebaseUser || !firebaseUser.uid) return;
+
   const ref = doc(db, "users", firebaseUser.uid);
-  const snap = await getDoc(ref);
-  const exists = snap.exists();
+  try {
+    const snap = await getDoc(ref);
+    const exists = snap.exists();
 
-  const payload: Partial<UserDocument> = {
-    uid: firebaseUser.uid,
-    name: firebaseUser.displayName ?? "",
-    phone: firebaseUser.phoneNumber ?? "",
-    email: firebaseUser.email ?? null,
-    photoURL: firebaseUser.photoURL ?? null,
-    // Preserve existing languagePreference if doc already exists
-    languagePreference: exists
-      ? (snap.data()?.languagePreference ?? languagePreference)
-      : languagePreference,
-  };
+    const payload: Partial<UserDocument> = {
+      uid: firebaseUser.uid,
+      name: firebaseUser.displayName ?? "",
+      phone: firebaseUser.phoneNumber ?? "",
+      email: firebaseUser.email ?? null,
+      photoURL: firebaseUser.photoURL ?? null,
+      // Preserve existing languagePreference if doc already exists
+      languagePreference: exists
+        ? (snap.data()?.languagePreference ?? languagePreference)
+        : languagePreference,
+    };
 
-  if (!exists) {
-    // Only set createdAt once, on first creation
-    await setDoc(ref, { ...payload, createdAt: serverTimestamp() });
-  } else {
-    await setDoc(ref, payload, { merge: true });
+    if (!exists) {
+      // Only set createdAt once, on first creation
+      await setDoc(ref, { ...payload, createdAt: serverTimestamp() });
+    } else {
+      await setDoc(ref, payload, { merge: true });
+    }
+  } catch (err) {
+    console.warn("[Firestore] upsertUser warning (may be initial sync):", err);
   }
 }
 
@@ -56,17 +62,35 @@ export function subscribeToUser(
   uid: string,
   callback: (doc: UserDocument | null) => void
 ): Unsubscribe {
+  if (!uid) {
+    callback(null);
+    return () => {};
+  }
+
   const ref = doc(db, "users", uid);
-  return onSnapshot(ref, (snap) => {
-    callback(snap.exists() ? (snap.data() as UserDocument) : null);
-  });
+  return onSnapshot(
+    ref,
+    (snap) => {
+      callback(snap.exists() ? (snap.data() as UserDocument) : null);
+    },
+    (error) => {
+      console.warn(`[Firestore] subscribeToUser error for UID ${uid}:`, error);
+      callback(null);
+    }
+  );
 }
 
 // ─── One-shot read ────────────────────────────────────────────────────────────
 
 export async function getUser(uid: string): Promise<UserDocument | null> {
-  const snap = await getDoc(doc(db, "users", uid));
-  return snap.exists() ? (snap.data() as UserDocument) : null;
+  if (!uid) return null;
+  try {
+    const snap = await getDoc(doc(db, "users", uid));
+    return snap.exists() ? (snap.data() as UserDocument) : null;
+  } catch (err) {
+    console.warn(`[Firestore] getUser error for UID ${uid}:`, err);
+    return null;
+  }
 }
 
 // ─── Language preference update ───────────────────────────────────────────────
@@ -75,9 +99,14 @@ export async function updateLanguagePreference(
   uid: string,
   lang: Language
 ): Promise<void> {
-  await setDoc(
-    doc(db, "users", uid),
-    { languagePreference: lang },
-    { merge: true }
-  );
+  if (!uid) return;
+  try {
+    await setDoc(
+      doc(db, "users", uid),
+      { languagePreference: lang },
+      { merge: true }
+    );
+  } catch (err) {
+    console.warn("[Firestore] updateLanguagePreference error:", err);
+  }
 }
