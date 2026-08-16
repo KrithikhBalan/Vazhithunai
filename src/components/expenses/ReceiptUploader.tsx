@@ -52,24 +52,66 @@ export function ReceiptUploader({
     if (cameraInputRef.current) cameraInputRef.current.value = "";
   };
 
-  // Trigger AI OCR extraction (Extensible hook ready for Module 8)
+  // Trigger AI OCR extraction via server-side Gemini Vision gateway
   const handleScanReceipt = async () => {
-    if (!previewUrl && !receiptFile) return;
+    if (!receiptFile) {
+      toast.error(lang === "ta" ? "ஒரு படத்தை தேர்வு செய்யவும்" : "Please select an image first");
+      return;
+    }
     setIsScanning(true);
-    toast.loading(t("expenses.ocrScanning"), { id: "ocr-toast" });
+    const toastId = "ocr-toast";
+    toast.loading(
+      lang === "ta" ? "AI ரசீதை படிக்கிறது…" : "AI is reading your receipt…",
+      { id: toastId }
+    );
 
     try {
-      // Simulate OCR scan payload
-      await new Promise((res) => setTimeout(res, 1200));
-      toast.success(t("expenses.ocrSuccess"), { id: "ocr-toast" });
+      const formData = new FormData();
+      formData.append("image", receiptFile);
+
+      const res = await fetch("/api/ai/ocr", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.status === 429) {
+        toast.error(
+          lang === "ta"
+            ? "மீண்டும் கோரிக்கை வைக்க காத்திருக்கவும்"
+            : "Too many requests — please wait a moment",
+          { id: toastId }
+        );
+        return;
+      }
+
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "OCR failed");
+      }
+
+      toast.success(
+        lang === "ta"
+          ? `AI கண்டுபிடித்தது! நீங்கள் உறுதிப்படுத்தவும்.`
+          : `AI extracted data — please verify before saving!`,
+        { id: toastId, duration: 5000 }
+      );
 
       if (onOcrExtracted) {
         onOcrExtracted({
-          description: "Highway Toll & Food Bill",
+          amountPaise: data.amountPaise,
+          description: data.description,
+          category: data.category,
         });
       }
-    } catch {
-      toast.error(lang === "ta" ? "ரசீது ஸ்கேன் செய்ய முடியவில்லை" : "Could not scan receipt", { id: "ocr-toast" });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "OCR failed";
+      toast.error(
+        lang === "ta"
+          ? `ரசீது படிக்கவில்லை: ${msg}`
+          : `Could not scan receipt: ${msg}`,
+        { id: toastId }
+      );
     } finally {
       setIsScanning(false);
     }
