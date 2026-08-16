@@ -1,4 +1,4 @@
-// Purpose: Firestore operations for the 'users' collection (creating user profiles, real-time sync, and updating user preferences with robust error handling).
+// Purpose: Firestore operations for the 'users' collection (creating user profiles, real-time sync, updating UPI IDs, and managing user preferences with robust error handling).
 
 import {
   doc,
@@ -35,7 +35,7 @@ export async function upsertUser(
       phone: firebaseUser.phoneNumber ?? "",
       email: firebaseUser.email ?? null,
       photoURL: firebaseUser.photoURL ?? null,
-      // Preserve existing languagePreference if doc already exists
+      // Preserve existing languagePreference and upiId if doc already exists
       languagePreference: exists
         ? (snap.data()?.languagePreference ?? languagePreference)
         : languagePreference,
@@ -43,7 +43,7 @@ export async function upsertUser(
 
     if (!exists) {
       // Only set createdAt once, on first creation
-      await setDoc(ref, { ...payload, createdAt: serverTimestamp() });
+      await setDoc(ref, { ...payload, upiId: null, createdAt: serverTimestamp() });
     } else {
       await setDoc(ref, payload, { merge: true });
     }
@@ -109,4 +109,39 @@ export async function updateLanguagePreference(
   } catch (err) {
     console.warn("[Firestore] updateLanguagePreference error:", err);
   }
+}
+
+// ─── UPI ID and Profile update ────────────────────────────────────────────────
+
+/**
+ * Updates the user's UPI ID (VPA) in their `users/{uid}` document.
+ */
+export async function updateUserUpiId(
+  uid: string,
+  upiId: string
+): Promise<void> {
+  if (!uid) return;
+  const ref = doc(db, "users", uid);
+  await setDoc(
+    ref,
+    { upiId: upiId.trim(), updatedAt: serverTimestamp() },
+    { merge: true }
+  );
+}
+
+/**
+ * Updates the user's profile information (name, upiId, language).
+ */
+export async function updateUserProfile(
+  uid: string,
+  updates: { name?: string; upiId?: string | null; languagePreference?: Language }
+): Promise<void> {
+  if (!uid) return;
+  const ref = doc(db, "users", uid);
+  const payload: Record<string, any> = { updatedAt: serverTimestamp() };
+  if (updates.name !== undefined) payload.name = updates.name.trim();
+  if (updates.upiId !== undefined) payload.upiId = updates.upiId ? updates.upiId.trim() : null;
+  if (updates.languagePreference !== undefined) payload.languagePreference = updates.languagePreference;
+
+  await setDoc(ref, payload, { merge: true });
 }

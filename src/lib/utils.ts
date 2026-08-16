@@ -1,4 +1,4 @@
-// Purpose: General helper utilities across Vazhithunai (Tailwind class merging, Paise integer money conversions, phone formatting, and UPI deep-link generation).
+// Purpose: General helper utilities across Vazhithunai (Tailwind class merging, Paise integer money conversions, phone formatting, UPI deep-link generation, and UPI ID validation).
 
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -37,19 +37,34 @@ export function formatPhone(phone: string): string {
   return phone;
 }
 
-/** Generate UPI deep-link URL (non-custodial — never stores credentials) */
+/**
+ * Validates UPI VPA format (e.g. name@okhdfcbank, mobile@paytm, user@upi).
+ */
+export function isValidUpiId(upiId: string): boolean {
+  if (!upiId || typeof upiId !== "string") return false;
+  const upiRegex = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/;
+  return upiRegex.test(upiId.trim());
+}
+
+/**
+ * Generate standard UPI deep-link URL protocol (non-custodial — never stores credentials).
+ * upi://pay?pa={UPI_ID}&pn={Name}&am={Amount}&cu=INR&tn={Note}
+ */
 export function buildUpiUrl(params: {
-  pa: string; // payee VPA
+  pa: string; // payee VPA (e.g. name@okhdfcbank)
   pn: string; // payee name
   am: number; // amount in paise
   tn?: string; // transaction note
 }): string {
-  const inr = (params.am / 100).toFixed(2);
-  const url = new URL("upi://pay");
-  url.searchParams.set("pa", params.pa);
-  url.searchParams.set("pn", params.pn);
-  url.searchParams.set("am", inr);
-  url.searchParams.set("cu", "INR");
-  if (params.tn) url.searchParams.set("tn", params.tn);
-  return url.toString();
+  const inr = (Math.max(0, Math.floor(params.am)) / 100).toFixed(2);
+  const searchParams = new URLSearchParams();
+  searchParams.set("pa", params.pa.trim());
+  searchParams.set("pn", params.pn.trim());
+  searchParams.set("am", inr);
+  searchParams.set("cu", "INR");
+  if (params.tn) {
+    searchParams.set("tn", params.tn.trim());
+  }
+
+  return `upi://pay?${searchParams.toString()}`;
 }
