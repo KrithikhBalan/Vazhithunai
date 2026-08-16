@@ -1,10 +1,21 @@
-// Purpose: Next.js Server-Side API Route proxying Google Places API (New) Text Search with strict field masking and curated nationwide fallback dataset.
+// Purpose: Next.js Server-Side API Route proxying Google Places API (New) Text Search with strict field masking, rate limiting, and curated nationwide fallback dataset.
 
 import { NextResponse } from "next/server";
 import { CURATED_PLACES, calculateDistanceKm } from "@/lib/placesData";
+import { checkRateLimit, getClientIp } from "@/lib/aiRateLimit";
 import type { PlaceSummary } from "@/types/place";
 
 export async function GET(request: Request) {
+  // Rate limit: 60 search requests per minute per IP
+  const ip = getClientIp(request);
+  const rl = checkRateLimit(`places_search:${ip}`, 60, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Rate limit exceeded. Please wait a moment." },
+      { status: 429, headers: { "X-RateLimit-Reset": String(Math.ceil(rl.resetAt / 1000)) } }
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const query = (searchParams.get("q") || "").toLowerCase().trim();
   const category = (searchParams.get("category") || "all").toLowerCase().trim();

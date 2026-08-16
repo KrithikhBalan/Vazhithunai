@@ -1,4 +1,4 @@
-// Purpose: Production-grade Cloud Firestore security rules enforcing granular authentication, trip membership verification, and expense ownership.
+// Purpose: Production-hardened Cloud Firestore Security Rules for Vazhithunai. Enforces strict UID ownership for user profiles, trip membership verification for trips, expenses, and settlements, and absolute default-deny.
 
 rules_version = '2';
 service cloud.firestore {
@@ -6,7 +6,7 @@ service cloud.firestore {
 
     // ─── Helper Functions ───────────────────────────────────────────────────
 
-    // Check if the request is from an authenticated user
+    // Check if the request is from an authenticated Firebase Auth session
     function isAuthenticated() {
       return request.auth != null && request.auth.uid != null;
     }
@@ -26,21 +26,23 @@ service cloud.firestore {
     }
 
     // ─── Users Collection ───────────────────────────────────────────────────
-    // Authenticated users can read member profiles; only the owner can write their document.
+    // User documents contain sensitive PII. Read and write are restricted to the owning UID only.
     match /users/{uid} {
-      allow read: if isAuthenticated();
-      allow create, update: if isOwner(uid);
+      allow read, write: if isOwner(uid);
       allow delete: if false;
     }
 
     // ─── Trips Collection ───────────────────────────────────────────────────
-    // Only trip creators or participating members can access trip data.
+    // Only verified trip creators and participating members can read or write trip data.
     match /trips/{tripId} {
       allow read: if isAuthenticated() && (
         resource.data.createdBy == request.auth.uid ||
         (resource.data.memberIds != null && request.auth.uid in resource.data.memberIds)
       );
-      allow create: if isAuthenticated() && request.resource.data.createdBy == request.auth.uid;
+      allow create: if isAuthenticated() && (
+        request.resource.data.createdBy == request.auth.uid ||
+        (request.resource.data.memberIds != null && request.auth.uid in request.resource.data.memberIds)
+      );
       allow update: if isAuthenticated() && (
         resource.data.createdBy == request.auth.uid ||
         (resource.data.memberIds != null && request.auth.uid in resource.data.memberIds)
@@ -49,7 +51,7 @@ service cloud.firestore {
     }
 
     // ─── Expenses Collection ─────────────────────────────────────────────────
-    // Only verified members of the parent trip can create, read, or modify expenses.
+    // Only verified members of the parent trip can create, read, update, or delete expenses.
     match /expenses/{expenseId} {
       allow read: if isAuthenticated() && isTripMember(resource.data.tripId);
       allow create: if isAuthenticated() && isTripMember(request.resource.data.tripId);
@@ -58,7 +60,7 @@ service cloud.firestore {
     }
 
     // ─── Settlements Collection ──────────────────────────────────────────────
-    // Only verified members of the parent trip can manage settlements.
+    // Only verified members of the parent trip can read or manage settlements.
     match /settlements/{settlementId} {
       allow read: if isAuthenticated() && isTripMember(resource.data.tripId);
       allow create: if isAuthenticated() && isTripMember(request.resource.data.tripId);
@@ -67,7 +69,7 @@ service cloud.firestore {
     }
 
     // ─── Default Deny ───────────────────────────────────────────────────────
-    // All other collections and paths are strictly blocked.
+    // All other collections, subcollections, and paths are strictly blocked.
     match /{document=**} {
       allow read, write: if false;
     }

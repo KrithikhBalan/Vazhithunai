@@ -1,9 +1,20 @@
-// Purpose: Next.js Server-Side API Route for Google Routes API (computeRoutes) proxying distance, travel duration, mileage-based fuel cost, and highway toll estimation.
+// Purpose: Next.js Server-Side API Route for Google Routes API (computeRoutes) proxying distance, travel duration, mileage-based fuel cost, and highway toll estimation with rate limiting.
 
 import { NextResponse } from "next/server";
+import { checkRateLimit, getClientIp } from "@/lib/aiRateLimit";
 import type { RouteCalculationResult } from "@/types/place";
 
 export async function POST(request: Request) {
+  // Rate limit: 30 route computations per minute per IP
+  const ip = getClientIp(request);
+  const rl = checkRateLimit(`routes_compute:${ip}`, 30, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Rate limit exceeded. Please wait a moment." },
+      { status: 429, headers: { "X-RateLimit-Reset": String(Math.ceil(rl.resetAt / 1000)) } }
+    );
+  }
+
   try {
     const body = await request.json();
     const origin = body.origin || "Chennai, Tamil Nadu";
