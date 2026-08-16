@@ -1,4 +1,4 @@
-// Purpose: TypeScript type definitions for Trip entities, Trip members, and Trip Firestore documents.
+// Purpose: TypeScript type definitions for Trip entities, Trip members, and Trip Firestore documents with indexed memberIds for security rules.
 
 import type { Timestamp } from "firebase/firestore";
 
@@ -22,6 +22,7 @@ export interface TripDocument {
   endDate: string;   // YYYY-MM-DD
   coverPhotoUrl?: string | null;
   members: TripMember[];
+  memberIds: string[]; // Indexed array of member IDs for Firestore array-contains security queries
   totalExpensePaise: number; // 64-bit integer sum of all expenses in paise (1 INR = 100 Paise)
   settlementStatus?: "unsettled" | "partially_settled" | "settled";
   createdBy: string; // memberId / UID
