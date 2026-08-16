@@ -18,8 +18,12 @@ export function formatPaise(paise: number | bigint): string {
   }).format(amount);
 }
 
-/** Convert INR decimal string input to paise integer (no floats ever stored) */
-export function inrToPaise(inr: string): number {
+/** Convert INR decimal (string or number) input to paise integer (no floats ever stored) */
+export function inrToPaise(inr: string | number): number {
+  if (typeof inr === "number") {
+    if (isNaN(inr)) return 0;
+    return Math.round(inr * 100);
+  }
   const parsed = parseFloat(inr.replace(/[^0-9.]/g, ""));
   if (isNaN(parsed)) return 0;
   return Math.round(parsed * 100);

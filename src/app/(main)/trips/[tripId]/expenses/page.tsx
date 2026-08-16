@@ -10,21 +10,17 @@ import { useAuthStore } from "@/store/authStore";
 import { subscribeToTrip, ensureDemoTrip } from "@/lib/firebase/trips";
 import { subscribeToTripExpenses, deleteExpense } from "@/lib/firebase/expenses";
 import type { TripDocument, TripMember } from "@/types/trip";
-import type { ExpenseDocument, ExpenseCategory } from "@/types/expense";
+import type { ExpenseDocument } from "@/types/expense";
 import { ExpenseCard } from "@/components/expenses/ExpenseCard";
 import { CATEGORIES } from "@/components/expenses/CategoryPicker";
 import { formatPaise } from "@/lib/utils";
 import {
   ArrowLeft,
   Plus,
-  Filter,
   Receipt,
   Wallet,
-  Calendar,
-  Sparkles,
   Search,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 
 export default function ExpenseLedgerPage() {
@@ -32,7 +28,7 @@ export default function ExpenseLedgerPage() {
   const router = useRouter();
   const tripId = params.tripId as string;
   const { t, lang } = useLanguage();
-  const { user } = useAuthStore();
+  const { user, userDoc } = useAuthStore();
 
   const [trip, setTrip] = useState<TripDocument | null>(null);
   const [expenses, setExpenses] = useState<ExpenseDocument[]>([]);
@@ -56,8 +52,8 @@ export default function ExpenseLedgerPage() {
         // Create demo trip for instant preview
         ensureDemoTrip({
           uid: user.uid,
-          name: user.displayName || user.name || "User",
-          phone: user.phoneNumber || user.phone || undefined,
+          name: userDoc?.name || user.displayName || "User",
+          phone: userDoc?.phone || user.phoneNumber || undefined,
         }).then((demo) => {
           setTrip(demo);
           setLoading(false);
@@ -73,7 +69,7 @@ export default function ExpenseLedgerPage() {
       unsubTrip();
       unsubExpenses();
     };
-  }, [tripId, user]);
+  }, [tripId, user, userDoc]);
 
   // Handle Delete Expense
   const handleDeleteExpense = async (
