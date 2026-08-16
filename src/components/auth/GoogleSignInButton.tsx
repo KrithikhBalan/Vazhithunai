@@ -1,3 +1,5 @@
+// Purpose: UI Component for Google OAuth single sign-on with official branded button styling and automatic error handling.
+
 "use client";
 
 import { useState } from "react";

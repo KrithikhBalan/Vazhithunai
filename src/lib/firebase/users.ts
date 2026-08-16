@@ -1,3 +1,5 @@
+// Purpose: Firestore operations for the 'users' collection (creating user profiles, real-time sync, and updating user preferences).
+
 import {
   doc,
   setDoc,

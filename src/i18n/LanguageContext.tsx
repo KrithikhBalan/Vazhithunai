@@ -1,3 +1,5 @@
+// Purpose: React Context and hook (useLanguage) providing reactive language switching, translation function t(namespace, key), and syncing preferences to Firestore and localStorage.
+
 "use client";
 
 import React, {

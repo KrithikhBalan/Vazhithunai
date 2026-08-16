@@ -1,3 +1,5 @@
+// Purpose: Cloud Firestore security rules restricting read/write access to user documents exclusively to their owning authenticated UID.
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {

@@ -1,3 +1,5 @@
+// Purpose: Zustand global state store for Authentication status (Firebase user object, Firestore user profile doc, and loading state).
+
 import { create } from "zustand";
 import type { User } from "firebase/auth";
 import type { UserDocument } from "@/types/user";

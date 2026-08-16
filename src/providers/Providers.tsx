@@ -1,3 +1,5 @@
+// Purpose: Top-level client-side component boundary that aggregates all React providers (AuthProvider, LanguageProvider, Toaster notifications) safely for Next.js App Router.
+
 "use client";
 
 import { type ReactNode } from "react";

@@ -1,3 +1,5 @@
+// Purpose: Dynamic dictionary loaders, translation helpers (dot notation resolver), and localStorage helpers for instant bilingual support (Tamil & English).
+
 import type { Language, Namespace, Dictionary } from "@/types/i18n";
 
 /**

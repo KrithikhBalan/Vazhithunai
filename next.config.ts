@@ -1,3 +1,5 @@
+// Purpose: Next.js configuration enabling Turbopack support, Serwist PWA service worker integration, and remote image domain whitelisting.
+
 import type { NextConfig } from "next";
 import withSerwistInit from "@serwist/next";
 

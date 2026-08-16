@@ -1,3 +1,5 @@
+// Purpose: Main User Dashboard Screen — protected route showing authenticated user profile details, Firestore sync status, and navigation to trips and expense modules.
+
 "use client";
 
 import { useEffect } from "react";

@@ -1,3 +1,5 @@
+// Purpose: Next.js Root Layout file defining the global HTML shell, viewport, metadata, Google Fonts, and the root React Providers boundary.
+
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "@/providers/Providers";

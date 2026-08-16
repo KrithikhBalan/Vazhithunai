@@ -1,3 +1,5 @@
+// Purpose: Authentication helper functions for Firebase Phone OTP (with invisible reCAPTCHA), Google OAuth Sign-In, and Sign-Out.
+
 import {
   signInWithPhoneNumber,
   GoogleAuthProvider,

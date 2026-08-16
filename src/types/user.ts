@@ -1,3 +1,5 @@
+// Purpose: TypeScript data types and schemas for User management, including the exact Firestore 'users/{uid}' document structure.
+
 import type { Timestamp } from "firebase/firestore";
 
 /** Supported UI languages */
@@ -5,7 +7,7 @@ export type Language = "ta" | "en";
 
 /**
  * Firestore `users/{uid}` document schema.
- * Amounts (future) are always stored as bigint paise — never floats.
+ * Amounts (future) are always stored as integer paise (64-bit safe) — never floats.
  */
 export interface UserDocument {
   /** Firebase Auth UID — also the Firestore document ID */

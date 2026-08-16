@@ -1,3 +1,5 @@
+// Purpose: General helper utilities across Vazhithunai (Tailwind class merging, Paise integer money conversions, phone formatting, and UPI deep-link generation).
+
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 

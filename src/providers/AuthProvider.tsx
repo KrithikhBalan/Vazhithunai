@@ -1,3 +1,5 @@
+// Purpose: React Context provider that listens to Firebase onAuthStateChanged, synchronizes state with Zustand authStore, and upserts user docs into Firestore.
+
 "use client";
 
 import { useEffect, type ReactNode } from "react";

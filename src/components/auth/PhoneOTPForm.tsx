@@ -1,3 +1,5 @@
+// Purpose: UI Component for Phone Number OTP authentication flow (Phone input with +91 prefix, invisible reCAPTCHA, 6-digit auto-advancing OTP input, and verification).
+
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";

@@ -1,3 +1,5 @@
+// Purpose: Firebase SDK initialization and singleton configuration for Auth, Firestore, and Storage (SSR-safe for Next.js).
+
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
@@ -10,18 +12,19 @@ const firebaseConfig = {
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Only initialize Firebase in browser environments.
+// Only initialize Firebase in browser/client environments.
 // During Next.js server-side/static rendering, skip initialization
-// to prevent auth/invalid-api-key errors when .env.local is not set.
+// to prevent auth/invalid-api-key errors when .env.local is being built.
 const isClient = typeof window !== "undefined";
 
 const app = isClient
   ? getApps().length === 0
     ? initializeApp(firebaseConfig)
     : getApp()
-  : // Return a dummy value during SSR — never used as providers are client-only
+  : // Return a dummy placeholder during SSR — never used because providers are client-only
     null!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
 export const auth = isClient ? getAuth(app) : null!;

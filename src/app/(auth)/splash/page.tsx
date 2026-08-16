@@ -1,5 +1,6 @@
-"use client";
+// Purpose: SCR-01 Splash & Language Selection Screen — features animated Kolam brand motif, instant Tamil/English language selector, and onboarding CTA.
 
+"use client";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";

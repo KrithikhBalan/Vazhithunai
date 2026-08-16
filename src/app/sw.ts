@@ -1,3 +1,5 @@
+// Purpose: Serwist Progressive Web App (PWA) Service Worker for offline asset precaching and runtime caching strategies.
+
 import { defaultCache } from "@serwist/next/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { Serwist } from "serwist";

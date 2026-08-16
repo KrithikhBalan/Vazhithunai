@@ -1,8 +1,10 @@
+// Purpose: TypeScript type definitions for the Internationalization (i18n) system covering supported languages, namespaces, and translation contexts.
+
 import type { Language } from "./user";
 
 export type { Language };
 
-/** The six dictionary namespaces */
+/** The six dictionary namespaces in Vazhithunai */
 export type Namespace =
   | "common"
   | "trips"

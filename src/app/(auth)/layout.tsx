@@ -1,5 +1,5 @@
-// Force all pages in this (auth) group to be dynamically rendered.
-// Firebase Auth cannot be pre-rendered at build time.
+// Purpose: Layout for the (auth) route group enforcing dynamic server rendering for all authentication screens (Splash & Login).
+
 export const dynamic = "force-dynamic";
 
 export default function AuthGroupLayout({

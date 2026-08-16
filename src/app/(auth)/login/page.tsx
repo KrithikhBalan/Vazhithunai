@@ -1,8 +1,9 @@
+// Purpose: SCR-02 Login & Authentication Screen — provides seamless Phone OTP login with reCAPTCHA and Google Sign-In with glassmorphic cards.
+
 "use client";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import type { Metadata } from "next";
 import { useAuthStore } from "@/store/authStore";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { PhoneOTPForm } from "@/components/auth/PhoneOTPForm";
