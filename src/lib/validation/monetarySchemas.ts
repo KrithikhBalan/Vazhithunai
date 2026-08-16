@@ -8,8 +8,7 @@ import { z } from "zod";
  */
 export const PaiseIntegerSchema = z
   .number({
-    required_error: "Amount in paise is required",
-    invalid_type_error: "Amount in paise must be a number",
+    message: "Amount in paise must be a valid number",
   })
   .int("Amount in paise must be an exact integer (no decimals)")
   .nonnegative("Amount in paise cannot be negative")
