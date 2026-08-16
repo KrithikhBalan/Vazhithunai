@@ -8,14 +8,14 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuthStore } from "@/store/authStore";
 import { subscribeToTrip, ensureDemoTrip } from "@/lib/firebase/trips";
 import { createExpense } from "@/lib/firebase/expenses";
-import type { TripDocument, TripMember } from "@/types/trip";
-import type { ExpenseCategory, SplitType, SplitDetail, ExpenseFormData } from "@/types/expense";
+import type { TripDocument } from "@/types/trip";
+import type { ExpenseCategory, SplitType, ExpenseFormData } from "@/types/expense";
 import { CategoryPicker } from "@/components/expenses/CategoryPicker";
 import { SplitModeSelector } from "@/components/expenses/SplitModeSelector";
 import { ReceiptUploader } from "@/components/expenses/ReceiptUploader";
 import { computeSplitDetails } from "@/lib/splitCalculators";
-import { inrToPaise, formatPaise } from "@/lib/utils";
-import { ArrowLeft, Save, Sparkles, UserCheck } from "lucide-react";
+import { inrToPaise } from "@/lib/utils";
+import { ArrowLeft, Save, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 
@@ -24,7 +24,7 @@ export default function AddExpensePage() {
   const router = useRouter();
   const tripId = params.tripId as string;
   const { t, lang } = useLanguage();
-  const { user } = useAuthStore();
+  const { user, userDoc } = useAuthStore();
 
   const [trip, setTrip] = useState<TripDocument | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,8 +64,8 @@ export default function AddExpensePage() {
       } else if (user) {
         ensureDemoTrip({
           uid: user.uid,
-          name: user.displayName || user.name || "You",
-          phone: user.phoneNumber || user.phone || undefined,
+          name: userDoc?.name || user.displayName || "You",
+          phone: userDoc?.phone || user.phoneNumber || undefined,
         }).then((demo) => {
           setTrip(demo);
           setPaidBy(demo.members[0]?.memberId || user.uid);
@@ -76,13 +76,12 @@ export default function AddExpensePage() {
     });
 
     return () => unsub();
-  }, [tripId, user, paidBy, selectedParticipants.length]);
+  }, [tripId, user, userDoc, paidBy, selectedParticipants.length]);
 
   // Update amount in paise when amount string changes
   const handleAmountChange = (val: string) => {
     setAmountStr(val);
-    const parsed = parseFloat(val) || 0;
-    setAmountPaise(inrToPaise(parsed));
+    setAmountPaise(inrToPaise(val));
   };
 
   // Participant toggles
