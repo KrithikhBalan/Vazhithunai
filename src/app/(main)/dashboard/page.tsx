@@ -24,6 +24,7 @@ import {
   Wallet,
   Route,
   FileText,
+  Bot,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -208,6 +209,14 @@ export default function DashboardPage() {
                 >
                   <Wallet className="h-4 w-4" />
                   <span>{t("settlement.settleUp")}</span>
+                </Link>
+
+                <Link
+                  href={`/trips/${trips[0].tripId}/ai`}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-amber-200 bg-amber-950/40 border border-amber-500/30 hover:bg-amber-900/40 transition-all active:scale-95"
+                >
+                  <Bot className="h-4 w-4" />
+                  <span>{lang === "ta" ? "AI உதவியாளர்" : "AI Assistant"}</span>
                 </Link>
               </div>
             )}
