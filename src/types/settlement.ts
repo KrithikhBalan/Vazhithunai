@@ -2,8 +2,8 @@
 
 import type { Timestamp } from "firebase/firestore";
 
-/** Settlement status — always start as "pending" after computation */
-export type SettlementStatus = "pending" | "settled" | "disputed";
+/** Settlement status — "pending" | "settled" | "disputed" | "replaced" */
+export type SettlementStatus = "pending" | "settled" | "disputed" | "replaced";
 
 /** Firestore document schema for a single settlement transaction */
 export interface SettlementDocument {

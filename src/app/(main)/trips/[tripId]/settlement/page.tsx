@@ -1,4 +1,4 @@
-// Purpose: SCR-13 Settlement Screen — computes member net balances using the greedy minimization engine, writes minimal settlement transactions to Firestore, and displays Pay Now UPI hooks and status indicators for the entire trip group.
+// Purpose: SCR-13 Settlement Screen — computes member net balances using the greedy minimization engine, writes minimal settlement transactions to Firestore, and provides non-custodial UPI deep-link payment triggers and creditor receipt confirmations.
 
 "use client";
 
@@ -25,6 +25,9 @@ import {
   ChevronDown,
   ChevronUp,
   Receipt,
+  ShieldCheck,
+  QrCode,
+  ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
@@ -34,7 +37,7 @@ export default function SettlementPage() {
   const router = useRouter();
   const tripId = params.tripId as string;
   const { t, lang } = useLanguage();
-  const { user } = useAuthStore();
+  const { user, userDoc } = useAuthStore();
 
   const [trip, setTrip] = useState<TripDocument | null>(null);
   const [expenses, setExpenses] = useState<ExpenseDocument[]>([]);
@@ -155,6 +158,33 @@ export default function SettlementPage() {
 
       <main className="max-w-3xl mx-auto px-4 py-5 space-y-5">
 
+        {/* ─── Profile UPI Setup Prompt Banner ─── */}
+        {!userDoc?.upiId && (
+          <section className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-transparent border border-amber-500/30 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <QrCode className="h-5 w-5 text-amber-400 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-amber-300">
+                  {lang === "ta" ? "உங்கள் UPI ஐடியை அமைக்கவும்" : "Set Up Your UPI ID to Receive Payments"}
+                </p>
+                <p className="text-[11px] text-amber-200/80 truncate">
+                  {lang === "ta"
+                    ? "மற்றவர்கள் உங்களுக்கு பணம் அனுப்ப உங்கள் UPI ஐடி தேவை"
+                    : "Add your UPI ID so group members can pay you directly"}
+                </p>
+              </div>
+            </div>
+
+            <Link
+              href="/profile"
+              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-black hover:bg-amber-400 transition-colors shrink-0 flex items-center gap-1"
+            >
+              <span>{lang === "ta" ? "அமைக்க" : "Set Now"}</span>
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </section>
+        )}
+
         {/* ─── Overview Stats ─── */}
         <section className="grid grid-cols-3 gap-3">
           <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 text-center space-y-1">
@@ -184,6 +214,14 @@ export default function SettlementPage() {
               {settledCount}
             </p>
           </div>
+        </section>
+
+        {/* ─── Non-Custodial Zero Credential Disclaimer ─── */}
+        <section className="p-3.5 rounded-2xl bg-teal-500/5 border border-teal-500/20 flex items-start gap-2.5">
+          <ShieldCheck className="h-4 w-4 text-teal-400 shrink-0 mt-0.5" />
+          <p className="text-[11px] text-gray-300 leading-relaxed">
+            {t("settlement.nonCustodialSecurityNote")}
+          </p>
         </section>
 
         {/* ─── All Settled Banner ─── */}
@@ -246,11 +284,11 @@ export default function SettlementPage() {
         <section className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-white">
-              {lang === "ta" ? "தீர்வு பரிவர்த்தனைகள்" : "Settlement Transactions"}
+              {lang === "ta" ? "தீர்வு பரிவர்த்தனைகள் (குறைந்தபட்சம்)" : "Settlement Transactions (Minimized)"}
             </h2>
             {settlements.length > 0 && (
               <span className="text-[10px] text-teal-300 bg-teal-500/10 border border-teal-500/20 px-2 py-0.5 rounded-full font-medium">
-                {edges.length} {lang === "ta" ? "குறைந்தபட்சம்" : "minimized"}
+                {edges.length} {lang === "ta" ? "பரிவர்த்தனைகள்" : "transactions"}
               </span>
             )}
           </div>
@@ -266,7 +304,7 @@ export default function SettlementPage() {
                 type="button"
                 onClick={handleRecompute}
                 disabled={recomputing}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-teal-600 hover:bg-teal-500 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-teal-600 hover:bg-teal-500 transition-colors shadow-lg shadow-teal-950/40"
               >
                 <RefreshCw className={cn("h-3.5 w-3.5", recomputing && "animate-spin")} />
                 {lang === "ta" ? "தீர்வுகளை உருவாக்கு" : "Generate Settlements"}
@@ -294,6 +332,7 @@ export default function SettlementPage() {
               <SettlementCard
                 key={settlement.settlementId}
                 settlement={settlement}
+                tripName={trip?.name}
                 members={trip?.members ?? []}
                 currentUserId={user?.uid}
                 lang={lang}

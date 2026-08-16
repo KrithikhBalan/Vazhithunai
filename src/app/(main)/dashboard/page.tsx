@@ -89,19 +89,39 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="sticky top-0 z-30 backdrop-blur-md bg-[#08131d]/80 border-b border-white/10 px-4 py-3.5">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-teal-600/30 border border-teal-500/30 flex items-center justify-center">
+          <Link
+            href="/profile"
+            className="flex items-center gap-3 group p-1.5 -m-1.5 rounded-2xl hover:bg-white/5 transition-all"
+            title={lang === "ta" ? "சுயவிவரம் & UPI ஐடி" : "Profile & UPI Settings"}
+          >
+            <div className="w-10 h-10 rounded-full bg-teal-600/30 border border-teal-500/30 flex items-center justify-center group-hover:border-teal-400 transition-colors">
               <User className="h-5 w-5 text-teal-400" />
             </div>
             <div>
-              <p className="text-[11px] text-gray-400">{t("common.greeting")}</p>
-              <p className="font-semibold text-white text-sm">
+              <p className="text-[11px] text-gray-400 flex items-center gap-1">
+                <span>{t("common.greeting")}</span>
+                {userDoc?.upiId ? (
+                  <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded">UPI ✓</span>
+                ) : (
+                  <span className="text-[9px] text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded">Set UPI</span>
+                )}
+              </p>
+              <p className="font-semibold text-white text-sm group-hover:text-teal-300 transition-colors">
                 {userDoc?.name || user.displayName || (lang === "ta" ? "பயணி" : "Traveller")}
               </p>
             </div>
-          </div>
+          </Link>
 
           <div className="flex items-center gap-2">
+            {/* Profile Link Button */}
+            <Link
+              href="/profile"
+              className="p-2 rounded-xl text-gray-400 hover:text-teal-300 hover:bg-white/5 transition-colors"
+              title={t("common.profile")}
+            >
+              <User className="h-4 w-4" />
+            </Link>
+
             {/* Language Switcher */}
             <div className="flex items-center bg-white/5 border border-white/10 rounded-xl p-0.5">
               <button
