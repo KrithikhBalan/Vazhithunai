@@ -2,7 +2,7 @@
 
 import { computeSplitDetails } from "../src/lib/splitCalculators";
 import { computeMemberBalances, computeSettlements } from "../src/lib/settlementEngine";
-import { buildUpiPaymentUrl, formatPaise, inrToPaise } from "../src/lib/utils";
+import { buildUpiUrl, formatPaise, inrToPaise } from "../src/lib/utils";
 import { PaiseIntegerSchema, ExpenseSchema, SettlementSchema } from "../src/lib/validation/monetarySchemas";
 import type { ExpenseDocument } from "../src/types/expense";
 import type { TripMember } from "../src/types/trip";
@@ -204,12 +204,11 @@ runTest("Compute Minimal Settlement Transactions", () => {
 console.log("\n5. NON-CUSTODIAL UPI DEEP LINK GENERATION");
 
 runTest("Generate Standard UPI Deep Link with correct URL parameters", () => {
-  const upiUrl = buildUpiPaymentUrl({
-    upiId: "anand@okhdfcbank",
-    recipientName: "Anand Kumar",
-    amountPaise: 180000, // ₹1800.00
-    tripName: "Ooty Trip 2026",
-    settlementId: "sett_001",
+  const upiUrl = buildUpiUrl({
+    pa: "anand@okhdfcbank",
+    pn: "Anand Kumar",
+    am: 180000, // ₹1800.00
+    tn: "Ooty Trip 2026 sett_001",
   });
 
   if (!upiUrl.startsWith("upi://pay?")) throw new Error("Missing upi:// scheme");
