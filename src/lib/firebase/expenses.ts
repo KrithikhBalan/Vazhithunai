@@ -10,7 +10,7 @@ import {
   onSnapshot,
   query,
   where,
-  orderBy,
+  type Unsubscribe,
   Timestamp,
 } from "firebase/firestore";
 import type { ExpenseDocument, ExpenseFormData } from "@/types/expense";
@@ -176,27 +176,46 @@ export async function getExpense(expenseId: string): Promise<ExpenseDocument | n
 
 /**
  * Subscribes to real-time updates for all expenses belonging to a specific trip.
+ * Safely handles error callbacks to prevent unhandled Firestore permission exceptions.
  */
 export function subscribeToTripExpenses(
   tripId: string,
   onUpdate: (expenses: ExpenseDocument[]) => void
-): () => void {
+): Unsubscribe {
+  if (!tripId) {
+    onUpdate([]);
+    return () => {};
+  }
+
   const expensesRef = collection(db, EXPENSES_COLLECTION);
   const q = query(expensesRef, where("tripId", "==", tripId));
 
-  return onSnapshot(q, (snapshot) => {
-    const expenses: ExpenseDocument[] = [];
-    snapshot.forEach((docSnap) => {
-      expenses.push(docSnap.data() as ExpenseDocument);
-    });
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const expenses: ExpenseDocument[] = [];
+      snapshot.forEach((docSnap) => {
+        expenses.push(docSnap.data() as ExpenseDocument);
+      });
 
-    // Sort chronologically descending (newest first)
-    expenses.sort((a, b) => {
-      const timeA = a.createdAt instanceof Timestamp ? a.createdAt.toMillis() : new Date(a.createdAt as string).getTime() || 0;
-      const timeB = b.createdAt instanceof Timestamp ? b.createdAt.toMillis() : new Date(b.createdAt as string).getTime() || 0;
-      return timeB - timeA;
-    });
+      // Sort chronologically descending (newest first)
+      expenses.sort((a, b) => {
+        const timeA =
+          a.createdAt instanceof Timestamp
+            ? a.createdAt.toMillis()
+            : new Date(a.createdAt as string).getTime() || 0;
+        const timeB =
+          b.createdAt instanceof Timestamp
+            ? b.createdAt.toMillis()
+            : new Date(b.createdAt as string).getTime() || 0;
+        return timeB - timeA;
+      });
 
-    onUpdate(expenses);
-  });
+      onUpdate(expenses);
+    },
+    (error) => {
+      console.warn(`[Firestore] subscribeToTripExpenses warning for trip ${tripId}:`, error.message);
+      onUpdate([]);
+    }
+  );
 }
