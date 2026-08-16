@@ -11,6 +11,14 @@ import {
 } from "firebase/auth";
 import { auth } from "./config";
 
+// ─── Global Window Augmentation ───────────────────────────────────────────────
+
+declare global {
+  interface Window {
+    recaptchaVerifier?: RecaptchaVerifier | null;
+  }
+}
+
 // ─── reCAPTCHA Verifier Manager ──────────────────────────────────────────────
 
 /**
