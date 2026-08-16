@@ -1,6 +1,7 @@
-// Purpose: TypeScript type definitions for Trip entities, Trip members, and Trip Firestore documents with indexed memberIds for security rules.
+// Purpose: TypeScript type definitions for Trip entities, Trip members, Trip stops (itinerary), and Firestore document schema with indexed query support.
 
 import type { Timestamp } from "firebase/firestore";
+import type { TripStop } from "./place";
 
 export interface TripMember {
   memberId: string; // Auth UID or synthetic ID for offline members
@@ -23,7 +24,13 @@ export interface TripDocument {
   coverPhotoUrl?: string | null;
   members: TripMember[];
   memberIds: string[]; // Indexed array of member IDs for Firestore array-contains security queries
+  stops?: TripStop[]; // Ordered list of tourist/hotel stops added to this trip
   totalExpensePaise: number; // 64-bit integer sum of all expenses in paise (1 INR = 100 Paise)
+  estimatedDistanceMeters?: number; // Distance in meters computed via Routes API
+  estimatedDurationSeconds?: number; // Travel duration in seconds
+  estimatedFuelCostPaise?: number; // Estimated fuel expense in paise
+  estimatedTollCostPaise?: number; // Estimated highway toll expense in paise
+  vehicleType?: "sedan" | "suv" | "bike" | "ev";
   settlementStatus?: "unsettled" | "partially_settled" | "settled";
   createdBy: string; // memberId / UID
   createdAt: Timestamp | Date | string;
