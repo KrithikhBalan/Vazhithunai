@@ -455,7 +455,7 @@ export function TripReportDocument({ data, lang }: TripReportDocumentProps) {
               style={[s.tableRow, i % 2 === 1 ? s.tableRowAlt : {}]}
               wrap={false}
             >
-              <Text style={[s.tableCell, { flex: 3 }]} numberOfLines={2}>
+              <Text style={[s.tableCell, { flex: 3 }]}>
                 {expense.description || "—"}
               </Text>
               <Text style={s.tableCell}>
@@ -463,7 +463,7 @@ export function TripReportDocument({ data, lang }: TripReportDocumentProps) {
                   ? CATEGORY_LABELS_TA[expense.category]
                   : CATEGORY_LABELS_EN[expense.category]}
               </Text>
-              <Text style={s.tableCell} numberOfLines={1}>
+              <Text style={s.tableCell}>
                 {memberName(expense.paidBy)}
               </Text>
               <Text style={s.tableCellBold}>
@@ -542,7 +542,7 @@ export function TripReportDocument({ data, lang }: TripReportDocumentProps) {
               style={[s.tableRow, i % 2 === 1 ? s.tableRowAlt : {}]}
               wrap={false}
             >
-              <Text style={[s.tableCellBold, { flex: 2 }]} numberOfLines={1}>
+              <Text style={[s.tableCellBold, { flex: 2 }]}>
                 {mb.name}
               </Text>
               <Text style={s.tableCell}>
@@ -605,10 +605,10 @@ export function TripReportDocument({ data, lang }: TripReportDocumentProps) {
                 style={[s.tableRow, i % 2 === 1 ? s.tableRowAlt : {}]}
                 wrap={false}
               >
-                <Text style={[s.tableCell, { flex: 2 }]} numberOfLines={1}>
+                <Text style={[s.tableCell, { flex: 2 }]}>
                   {memberName(sett.fromMemberId)}
                 </Text>
-                <Text style={[s.tableCell, { flex: 2 }]} numberOfLines={1}>
+                <Text style={[s.tableCell, { flex: 2 }]}>
                   {memberName(sett.toMemberId)}
                 </Text>
                 <Text style={s.tableCellBold}>
@@ -653,7 +653,7 @@ export function TripReportDocument({ data, lang }: TripReportDocumentProps) {
               style={[s.tableRow, i % 2 === 1 ? s.tableRowAlt : {}]}
               wrap={false}
             >
-              <Text style={[s.tableCellBold, { flex: 2 }]} numberOfLines={1}>
+              <Text style={[s.tableCellBold, { flex: 2 }]}>
                 {member.name}
               </Text>
               <Text style={[s.tableCell, { flex: 2 }]}>
