@@ -15,7 +15,7 @@ type Step = "phone" | "otp";
 
 export function PhoneOTPForm() {
   const router = useRouter();
-  const { t, lang } = useLanguage();
+  const { lang } = useLanguage();
 
   const [step, setStep] = useState<Step>("phone");
   const [phone, setPhone] = useState("");
@@ -51,8 +51,8 @@ export function PhoneOTPForm() {
     if (!/^\+91[6-9]\d{9}$/.test(e164)) {
       toast.error(
         lang === "ta"
-          ? "செல்லுபடியாகும் இந்திய தொலைபேசி எண்ணை உள்ளிடவும்"
-          : "Enter a valid Indian mobile number"
+          ? "செல்லுபடியாகும் இந்திய தொலைபேசி எண்ணை உள்ளிடவும் (10 இலக்கங்கள்)"
+          : "Enter a valid 10-digit Indian mobile number"
       );
       return;
     }
@@ -69,8 +69,26 @@ export function PhoneOTPForm() {
       );
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to send OTP";
-      toast.error(lang === "ta" ? "OTP அனுப்புவதில் தோல்வி. மீண்டும் முயற்சிக்கவும்." : msg);
+      const errObj = err as { code?: string; message?: string };
+      if (errObj.code === "auth/operation-not-allowed") {
+        toast.error(
+          lang === "ta"
+            ? "Firebase Console-ல் 'Phone' முறை இயக்கப்படவில்லை. Sign-in method-ல் Phone-ஐ Enable செய்யவும்."
+            : "Phone sign-in is disabled. Please enable 'Phone' in Firebase Console > Authentication > Sign-in method.",
+          { duration: 8000 }
+        );
+      } else if (errObj.code === "auth/invalid-phone-number") {
+        toast.error(lang === "ta" ? "தவறான தொலைபேசி எண் வடிவம்." : "Invalid phone number format.");
+      } else if (errObj.code === "auth/too-many-requests") {
+        toast.error(
+          lang === "ta"
+            ? "அதிகப்படியான முயற்சிகள். சிறிது நேரம் கழித்து முயற்சிக்கவும்."
+            : "Too many attempts. Please try again later."
+        );
+      } else {
+        const msg = errObj.message || "Failed to send OTP";
+        toast.error(msg);
+      }
       clearRecaptcha();
     } finally {
       setLoading(false);
@@ -92,8 +110,15 @@ export function PhoneOTPForm() {
       await confirmOTP(confirmationResult, code);
       toast.success(lang === "ta" ? "வெற்றிகரமாக உள்நுழைந்தது!" : "Signed in successfully!");
       router.push("/dashboard");
-    } catch {
-      toast.error(lang === "ta" ? "தவறான OTP. மீண்டும் முயற்சிக்கவும்." : "Invalid OTP. Please try again.");
+    } catch (err: unknown) {
+      const errObj = err as { code?: string };
+      if (errObj.code === "auth/invalid-verification-code") {
+        toast.error(lang === "ta" ? "தவறான OTP குறியீடு. மீண்டும் சரிபார்க்கவும்." : "Invalid OTP code. Please check and try again.");
+      } else if (errObj.code === "auth/code-expired") {
+        toast.error(lang === "ta" ? "OTP காலாவதியாகிவிட்டது. புதிய OTP அனுப்பவும்." : "OTP has expired. Please request a new one.");
+      } else {
+        toast.error(lang === "ta" ? "சரிபார்ப்பில் தோல்வி. மீண்டும் முயற்சிக்கவும்." : "Verification failed. Please try again.");
+      }
       setOtp(["", "", "", "", "", ""]);
       otpRefs.current[0]?.focus();
     } finally {
