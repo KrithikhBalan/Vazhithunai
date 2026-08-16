@@ -1,20 +1,36 @@
-// Purpose: Main User Dashboard Screen — protected route showing authenticated user profile details, Firestore sync status, and navigation to trips and expense modules.
+// Purpose: Main User Dashboard Screen showing user profile, active trip cards with real-time total expense paise balances, and quick actions to Expense Ledger (SCR-11) and Add Expense (SCR-12).
 
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuthStore } from "@/store/authStore";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { signOut } from "@/lib/firebase/auth";
-import { formatPhone } from "@/lib/utils";
+import { subscribeToUserTrips, ensureDemoTrip } from "@/lib/firebase/trips";
+import type { TripDocument } from "@/types/trip";
+import { formatPaise, formatPhone } from "@/lib/utils";
+import {
+  MapPin,
+  LogOut,
+  User,
+  Plus,
+  Receipt,
+  Users,
+  Compass,
+  ArrowRight,
+  Sparkles,
+  Wallet,
+} from "lucide-react";
 import toast from "react-hot-toast";
-import { MapPin, LogOut, User } from "lucide-react";
 
 export default function DashboardPage() {
   const router = useRouter();
   const { user, userDoc, loading } = useAuthStore();
-  const { lang, t } = useLanguage();
+  const { lang, t, setLanguage } = useLanguage();
+  const [trips, setTrips] = useState<TripDocument[]>([]);
+  const [tripsLoading, setTripsLoading] = useState(true);
 
   // Guard — redirect if not authenticated
   useEffect(() => {
@@ -22,6 +38,28 @@ export default function DashboardPage() {
       router.replace("/splash");
     }
   }, [user, loading, router]);
+
+  // Load user trips in real time
+  useEffect(() => {
+    if (!user) return;
+
+    const unsub = subscribeToUserTrips(user.uid, async (list) => {
+      if (list.length === 0) {
+        // Ensure default demo trip exists
+        const demo = await ensureDemoTrip({
+          uid: user.uid,
+          name: userDoc?.name || user.displayName || "You",
+          phone: user.phoneNumber || userDoc?.phone || undefined,
+        });
+        setTrips([demo]);
+      } else {
+        setTrips(list);
+      }
+      setTripsLoading(false);
+    });
+
+    return () => unsub();
+  }, [user, userDoc]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -31,94 +69,176 @@ export default function DashboardPage() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-dvh bg-vt-gradient flex items-center justify-center">
+      <div className="min-h-dvh bg-[#08131d] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <svg className="animate-spin h-8 w-8 text-teal-400" viewBox="0 0 24 24" fill="none">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
-          <p className="text-gray-400 text-sm">{t("common", "loading")}</p>
+          <p className="text-gray-400 text-sm">{t("common.loading")}</p>
         </div>
       </div>
     );
   }
 
+  // Calculate cumulative expense across all active trips
+  const cumulativeExpensesPaise = trips.reduce((sum, trip) => sum + (trip.totalExpensePaise || 0), 0);
+
   return (
-    <main className="min-h-dvh bg-vt-gradient px-5 py-8">
+    <div className="min-h-screen bg-gradient-to-b from-[#08131d] via-[#0b1b2b] to-[#060e17] text-white pb-20">
       {/* Header */}
-      <header className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-teal-600/30 border border-teal-500/30 flex items-center justify-center">
-            <User className="h-5 w-5 text-teal-400" />
+      <header className="sticky top-0 z-30 backdrop-blur-md bg-[#08131d]/80 border-b border-white/10 px-4 py-3.5">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-teal-600/30 border border-teal-500/30 flex items-center justify-center">
+              <User className="h-5 w-5 text-teal-400" />
+            </div>
+            <div>
+              <p className="text-[11px] text-gray-400">{t("common.greeting")}</p>
+              <p className="font-semibold text-white text-sm">
+                {userDoc?.name || user.displayName || (lang === "ta" ? "பயணி" : "Traveller")}
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-xs text-gray-500">{t("common", "greeting")}</p>
-            <p className="font-semibold text-white text-sm">
-              {userDoc?.name || user.displayName || (lang === "ta" ? "பயணி" : "Traveller")}
-            </p>
+
+          <div className="flex items-center gap-2">
+            {/* Language Switcher */}
+            <div className="flex items-center bg-white/5 border border-white/10 rounded-xl p-0.5">
+              <button
+                type="button"
+                onClick={() => setLanguage("en")}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  lang === "en" ? "bg-teal-500 text-black shadow-sm" : "text-gray-400 hover:text-white"
+                }`}
+              >
+                EN
+              </button>
+              <button
+                type="button"
+                onClick={() => setLanguage("ta")}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  lang === "ta" ? "bg-teal-500 text-black shadow-sm" : "text-gray-400 hover:text-white"
+                }`}
+              >
+                தமிழ்
+              </button>
+            </div>
+
+            {/* Sign Out */}
+            <button
+              id="sign-out-btn"
+              onClick={handleSignOut}
+              className="p-2 rounded-xl text-gray-400 hover:text-red-400 hover:bg-white/5 transition-colors"
+              title={t("common.signOut")}
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
           </div>
         </div>
-        <button
-          id="sign-out-btn"
-          onClick={handleSignOut}
-          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors"
-        >
-          <LogOut className="h-4 w-4" />
-          {t("common", "signOut")}
-        </button>
       </header>
 
-      {/* Welcome card */}
-      <div className="glass-strong rounded-2xl p-6 mb-6 text-center">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-teal-600/20 border border-teal-500/20 flex items-center justify-center">
-          <MapPin className="h-8 w-8 text-teal-400" />
-        </div>
-        <h1 className="text-2xl font-bold text-white mb-2">
-          {lang === "ta" ? "வழித்துணைக்கு வரவேற்கிறோம்!" : "Welcome to Vazhithunai!"}
-        </h1>
-        <p className="text-gray-400 text-sm mb-4">
-          {lang === "ta"
-            ? "உங்கள் முதல் பயணத்தை திட்டமிட தயாரா?"
-            : "Ready to plan your first adventure?"}
-        </p>
+      <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        {/* ─── Hero Overview Card ─── */}
+        <section className="relative overflow-hidden p-6 rounded-3xl bg-gradient-to-br from-teal-900/50 via-[#0d2235] to-[#08131d] border border-teal-500/30 shadow-2xl shadow-teal-950/40">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-teal-300">
+                <Wallet className="h-4 w-4" />
+                {lang === "ta" ? "மொத்த பயணச் செலவு" : "Total Trip Spending"}
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white font-mono tracking-tight">
+                {formatPaise(cumulativeExpensesPaise)}
+              </h2>
+              <p className="text-xs text-gray-300">
+                {trips.length} {lang === "ta" ? "செயலில் உள்ள பயணங்கள்" : "active trips recorded"}
+              </p>
+            </div>
 
-        {/* Auth debug info */}
-        <div className="glass rounded-xl p-4 text-left space-y-2 text-xs text-gray-400">
-          <p>
-            <span className="text-gray-500">UID:</span>{" "}
-            <span className="text-teal-400 font-mono">{user.uid}</span>
-          </p>
-          {user.phoneNumber && (
-            <p>
-              <span className="text-gray-500">
-                {lang === "ta" ? "தொலைபேசி:" : "Phone:"}
-              </span>{" "}
-              {formatPhone(user.phoneNumber)}
-            </p>
-          )}
-          {user.email && (
-            <p>
-              <span className="text-gray-500">Email:</span> {user.email}
-            </p>
-          )}
-          <p>
-            <span className="text-gray-500">
-              {lang === "ta" ? "மொழி:" : "Language:"}
-            </span>{" "}
-            {lang === "ta" ? "தமிழ்" : "English"}
-          </p>
-          <p className="text-green-400">
-            ✓ {lang === "ta" ? "Firestore ஆவணம் உருவாக்கப்பட்டது" : "Firestore document created"}
-          </p>
-        </div>
-      </div>
+            {trips[0] && (
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={`/trips/${trips[0].tripId}/expenses`}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-teal-600 hover:bg-teal-500 transition-all shadow-lg shadow-teal-950/50 active:scale-95"
+                >
+                  <Receipt className="h-4 w-4" />
+                  <span>{t("expenses.ledger")}</span>
+                </Link>
 
-      {/* Placeholder nav */}
-      <p className="text-center text-xs text-gray-600">
-        {lang === "ta"
-          ? "பயண மற்றும் செலவு தொகுதிகள் வரவிருக்கின்றன…"
-          : "Trip & expense modules coming next…"}
-      </p>
-    </main>
+                <Link
+                  href={`/trips/${trips[0].tripId}/expenses/new`}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-teal-300 bg-teal-950/60 border border-teal-500/40 hover:bg-teal-900/60 transition-all active:scale-95"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>{t("expenses.addExpense")}</span>
+                </Link>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ─── Trips Section ─── */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <Compass className="h-4 w-4 text-teal-400" />
+              <span>{lang === "ta" ? "உங்கள் பயணங்கள்" : "Your Trips"}</span>
+            </h3>
+          </div>
+
+          {tripsLoading ? (
+            <div className="p-8 text-center text-xs text-gray-400">Loading trips…</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {trips.map((trip) => (
+                <div
+                  key={trip.tripId}
+                  className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-teal-500/30 transition-all space-y-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1 flex-1 min-w-0">
+                      <h4 className="text-base font-bold text-white truncate">
+                        {trip.name}
+                      </h4>
+                      <p className="text-xs text-teal-400 flex items-center gap-1 truncate">
+                        <MapPin className="h-3.5 w-3.5 shrink-0" />
+                        <span>{trip.destination}</span>
+                      </p>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <span className="text-sm font-bold text-teal-300 font-mono block">
+                        {formatPaise(trip.totalExpensePaise || 0)}
+                      </span>
+                      <span className="text-[10px] text-gray-400">
+                        {lang === "ta" ? "மொத்த செலவு" : "Total spent"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-gray-400 line-clamp-2">
+                    {trip.description || "Trip with friends"}
+                  </p>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs text-gray-400">
+                    <span className="flex items-center gap-1">
+                      <Users className="h-3.5 w-3.5 text-teal-400" />
+                      <span>{trip.members?.length || 0} {lang === "ta" ? "உறுப்பினர்கள்" : "members"}</span>
+                    </span>
+
+                    <Link
+                      href={`/trips/${trip.tripId}/expenses`}
+                      className="flex items-center gap-1 text-teal-400 hover:text-teal-300 font-semibold transition-colors"
+                    >
+                      <span>{t("expenses.ledger")}</span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </main>
+    </div>
   );
 }
