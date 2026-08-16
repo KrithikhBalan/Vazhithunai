@@ -1,7 +1,7 @@
 // Purpose: End-to-end comprehensive test suite validating the entire Vazhithunai user flow: Trip Creation -> Member Roster -> Expenses with all 4 split algorithms (Equal with remainder paise distribution, Exact, Percentage, Shares) -> Greedy debt-minimization settlement calculation -> UPI deep link URL generation -> Settlement confirmation -> Zod Integer Paise monetary validation.
 
 import { computeSplitDetails } from "../src/lib/splitCalculators";
-import { computeSettlements, calculateNetBalances } from "../src/lib/settlementEngine";
+import { computeMemberBalances, computeSettlements } from "../src/lib/settlementEngine";
 import { buildUpiPaymentUrl, formatPaise, inrToPaise } from "../src/lib/utils";
 import { PaiseIntegerSchema, ExpenseSchema, SettlementSchema } from "../src/lib/validation/monetarySchemas";
 import type { ExpenseDocument } from "../src/types/expense";
@@ -151,17 +151,21 @@ const sampleExpenses: ExpenseDocument[] = [
   },
 ];
 
-runTest("Compute Net Balances (Total Paid - Total Share)", () => {
-  const balances = calculateNetBalances(memberIds, sampleExpenses);
+runTest("Compute Member Net Balances (Total Paid - Total Share)", () => {
+  const memberBalances = computeMemberBalances(members, sampleExpenses);
+  const balances: Record<string, number> = {};
+  for (const mb of memberBalances) {
+    balances[mb.memberId] = mb.netBalancePaise;
+  }
   
   // Total Spent: ₹6000 + ₹2000 + ₹1200 = ₹9200 (920000 paise)
   // m1 (Anand): Paid 600000, Share 180000 -> Net +420000 (+₹4200)
-  // m2 (Bala):  Paid 200000, Share 180000 -> Net +20000 (+₹200)
+  // m2 (Bala):  Paid 200000, Share 280000 -> Net -80000 (-₹800)
   // m3 (Chitra): Paid 120000, Share 280000 -> Net -160000 (-₹1600)
   // m4 (Dinesh): Paid 0,      Share 180000 -> Net -180000 (-₹1800)
   
   if (balances["m1"] !== 420000) throw new Error(`m1 balance mismatch: ${balances["m1"]}`);
-  if (balances["m2"] !== 20000) throw new Error(`m2 balance mismatch: ${balances["m2"]}`);
+  if (balances["m2"] !== -80000) throw new Error(`m2 balance mismatch: ${balances["m2"]}`);
   if (balances["m3"] !== -160000) throw new Error(`m3 balance mismatch: ${balances["m3"]}`);
   if (balances["m4"] !== -180000) throw new Error(`m4 balance mismatch: ${balances["m4"]}`);
 
@@ -174,24 +178,24 @@ runTest("Compute Net Balances (Total Paid - Total Share)", () => {
 console.log("\n4. GREEDY DEBT MINIMIZATION ENGINE");
 
 runTest("Compute Minimal Settlement Transactions", () => {
-  const settlements = computeSettlements("trip_ooty", memberIds, sampleExpenses);
+  const { edges } = computeSettlements(members, sampleExpenses);
   
-  // Total Debt = 1800 + 1600 = 340000 paise
-  const totalSettledAmount = settlements.reduce((s, item) => s + item.amountPaise, 0);
-  if (totalSettledAmount !== 340000) {
-    throw new Error(`Total settlement mismatch: ${totalSettledAmount} vs 340000`);
+  // Total Debt = 1800 + 1600 + 800 = 420000 paise
+  const totalSettledAmount = edges.reduce((s, item) => s + item.amountPaise, 0);
+  if (totalSettledAmount !== 420000) {
+    throw new Error(`Total settlement mismatch: ${totalSettledAmount} vs 420000`);
   }
 
-  // Greedy algorithm should produce 2 transactions:
+  // Greedy algorithm produces exactly 3 minimal transactions:
   // Dinesh (owes 1800) -> Anand (gets 1800)
   // Chitra (owes 1600) -> Anand (gets 1600)
-  // (Anand gets 1800 + 1600 = 3400; remaining +200 vs Bala +200 balances to net 0 after all debits)
-  if (settlements.length < 1 || settlements.length > 3) {
-    throw new Error(`Expected minimal transactions, got ${settlements.length}`);
+  // Bala (owes 800) -> Anand (gets 800)
+  if (edges.length !== 3) {
+    throw new Error(`Expected exactly 3 minimal transactions, got ${edges.length}`);
   }
 
-  console.log(`     Generated ${settlements.length} optimal settlements:`);
-  settlements.forEach((s) => {
+  console.log(`     Generated ${edges.length} optimal settlements:`);
+  edges.forEach((s) => {
     console.log(`     • ${s.fromMemberId} -> ${s.toMemberId}: ${formatPaise(s.amountPaise)}`);
   });
 });
