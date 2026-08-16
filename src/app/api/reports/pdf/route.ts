@@ -1,7 +1,8 @@
 // Purpose: Next.js Route Handler for server-side PDF report generation — fetches trip data from Firestore, registers Tamil Unicode fonts, renders a bilingual @react-pdf/renderer Document, and streams the binary PDF to the client with correct Content-Disposition headers for download or inline preview.
 
 import { NextRequest, NextResponse } from "next/server";
-import { renderToBuffer } from "@react-pdf/renderer";
+import { renderToBuffer, type DocumentProps } from "@react-pdf/renderer";
+import type { ReactElement, JSXElementConstructor } from "react";
 import React from "react";
 import { registerPdfFonts } from "@/lib/pdfFonts";
 import { fetchTripReportData } from "@/lib/tripReportData";
@@ -35,9 +36,13 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const reportData = await fetchTripReportData(tripId);
 
     // 3. Render the PDF document to a binary Buffer
-    const pdfBuffer = await renderToBuffer(
-      React.createElement(TripReportDocument, { data: reportData, lang })
-    );
+    // Cast is required: renderToBuffer expects ReactElement<DocumentProps> but our
+    // wrapper component correctly returns <Document> at runtime.
+    const element = React.createElement(
+      TripReportDocument,
+      { data: reportData, lang }
+    ) as ReactElement<DocumentProps, string | JSXElementConstructor<unknown>>;
+    const pdfBuffer = await renderToBuffer(element);
 
     // 4. Build safe filename
     const safeName = reportData.trip.name
