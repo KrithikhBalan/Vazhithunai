@@ -59,10 +59,8 @@ test.describe("Vazhithunai Comprehensive User Flows", () => {
     await expect(page.locator("h1")).toBeVisible();
 
     // Verify Recompute / Settle action button exists
-    const recomputeBtn = page.locator("button:has-text('Recompute'), button:has-text('மறு கணக்கீடு')").first();
-    if (await recomputeBtn.isVisible()) {
-      await expect(recomputeBtn).toBeEnabled();
-    }
+    const recomputeBtn = page.locator("#recompute-settlements-btn");
+    await expect(recomputeBtn).toBeVisible();
   });
 
   // ─── Flow 4: PDF Report Preview & Download ──────────────────────────────────
