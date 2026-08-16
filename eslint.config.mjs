@@ -1,3 +1,5 @@
+// Purpose: ESLint configuration enforcing Next.js recommended rules and TypeScript code quality standards for the Vazhithunai codebase.
+
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
