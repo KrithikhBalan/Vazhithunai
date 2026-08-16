@@ -1,0 +1,247 @@
+@import "tailwindcss";
+
+/* ─── Brand Tokens ─────────────────────────────────────────────────────────── */
+:root {
+  /* Core palette — deep teal + saffron */
+  --vt-teal-900: #042f2e;
+  --vt-teal-800: #064e3b;
+  --vt-teal-700: #065f46;
+  --vt-teal-600: #047857;
+  --vt-teal-500: #059669;
+  --vt-teal-400: #10b981;
+  --vt-teal-300: #34d399;
+  --vt-teal-200: #6ee7b7;
+  --vt-teal-100: #a7f3d0;
+
+  --vt-saffron-500: #f59e0b;
+  --vt-saffron-400: #fbbf24;
+  --vt-saffron-300: #fcd34d;
+  --vt-saffron-600: #d97706;
+
+  --vt-midnight: #0a1628;
+  --vt-deep: #0d1f3c;
+  --vt-surface: #111827;
+  --vt-surface-2: #1f2937;
+  --vt-surface-3: #374151;
+  --vt-border: rgba(255, 255, 255, 0.08);
+  --vt-border-strong: rgba(255, 255, 255, 0.15);
+
+  /* Semantic */
+  --background: var(--vt-midnight);
+  --foreground: #f9fafb;
+  --muted: #9ca3af;
+  --muted-fg: #6b7280;
+
+  /* Glass morphism */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: blur(16px);
+}
+
+/* ─── Tailwind theme extension ─────────────────────────────────────────────── */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-vt-teal: #0d9488;
+  --color-vt-saffron: #f59e0b;
+  --color-vt-midnight: var(--vt-midnight);
+  --color-surface: var(--vt-surface);
+  --color-surface-2: var(--vt-surface-2);
+  --color-muted: var(--muted);
+  --font-sans: "Inter", "Noto Sans Tamil", system-ui, sans-serif;
+}
+
+/* ─── Base Styles ──────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--vt-midnight);
+  color: var(--foreground);
+  font-family: "Inter", "Noto Sans Tamil", system-ui, sans-serif;
+  line-height: 1.6;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tamil text — use Noto Sans Tamil */
+:lang(ta),
+[lang="ta"] {
+  font-family: "Noto Sans Tamil", system-ui, sans-serif;
+}
+
+/* ─── Gradient Backgrounds ─────────────────────────────────────────────────── */
+.bg-vt-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--vt-midnight) 0%,
+    #0d1f3c 35%,
+    #042f2e 70%,
+    #0a1628 100%
+  );
+}
+
+.bg-vt-radial {
+  background: radial-gradient(
+    ellipse at top,
+    rgba(13, 148, 136, 0.15) 0%,
+    var(--vt-midnight) 60%
+  );
+}
+
+/* ─── Glass Morphism ───────────────────────────────────────────────────────── */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* ─── Animations ───────────────────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(13, 148, 136, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(13, 148, 136, 0.6), 0 0 80px rgba(13, 148, 136, 0.2);
+  }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.4s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+/* Staggered animation delays */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-700 { animation-delay: 700ms; }
+.delay-900 { animation-delay: 900ms; }
+
+/* Start invisible for staggered animations */
+.opacity-0-init {
+  opacity: 0;
+}
+
+/* ─── OTP Input ────────────────────────────────────────────────────────────── */
+.otp-input {
+  width: 3rem;
+  height: 3.5rem;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  border: 1.5px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--foreground);
+  caret-color: #0d9488;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.otp-input:focus {
+  outline: none;
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.25);
+}
+
+.otp-input:not(:placeholder-shown) {
+  border-color: rgba(13, 148, 136, 0.5);
+}
+
+/* ─── Scrollbar ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(13, 148, 136, 0.4);
+  border-radius: 9999px;
+}
+
+/* ─── Selection ────────────────────────────────────────────────────────────── */
+::selection {
+  background: rgba(13, 148, 136, 0.35);
+  color: white;
+}
+
+/* ─── Focus ring ───────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #0d9488;
+  outline-offset: 2px;
+  border-radius: 4px;
+}

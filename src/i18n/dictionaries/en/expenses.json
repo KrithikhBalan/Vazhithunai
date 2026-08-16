@@ -1,0 +1,27 @@
+{
+  "expenses": "Expenses",
+  "addExpense": "Add Expense",
+  "amount": "Amount",
+  "description": "Description",
+  "category": "Category",
+  "paidBy": "Paid By",
+  "splitWith": "Split With",
+  "splitEqual": "Split Equally",
+  "splitCustom": "Custom Split",
+  "date": "Date",
+  "receiptOCR": "Scan Receipt",
+  "uploading": "Uploading receipt…",
+  "categories": {
+    "food": "Food & Drinks",
+    "transport": "Transport",
+    "accommodation": "Accommodation",
+    "activities": "Activities",
+    "shopping": "Shopping",
+    "medical": "Medical",
+    "other": "Other"
+  },
+  "noExpenses": "No expenses recorded yet",
+  "totalExpenses": "Total Expenses",
+  "myShare": "My Share",
+  "deleteExpense": "Delete Expense"
+}

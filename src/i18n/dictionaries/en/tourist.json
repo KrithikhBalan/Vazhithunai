@@ -1,0 +1,29 @@
+{
+  "explore": "Explore",
+  "nearMe": "Near Me",
+  "popularPlaces": "Popular Places",
+  "searchPlaces": "Search places…",
+  "openNow": "Open Now",
+  "rating": "Rating",
+  "distance": "Distance",
+  "directions": "Get Directions",
+  "savePlace": "Save Place",
+  "savedPlaces": "Saved Places",
+  "reviews": "Reviews",
+  "photos": "Photos",
+  "hours": "Opening Hours",
+  "website": "Website",
+  "call": "Call",
+  "addToTrip": "Add to Trip",
+  "mustVisit": "Must Visit",
+  "hidden": "Hidden Gem",
+  "categories": {
+    "temples": "Temples",
+    "beaches": "Beaches",
+    "mountains": "Mountains",
+    "food": "Food & Restaurants",
+    "shopping": "Shopping",
+    "adventure": "Adventure",
+    "heritage": "Heritage Sites"
+  }
+}

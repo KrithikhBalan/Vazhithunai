@@ -1,0 +1,27 @@
+{
+  "expenses": "செலவுகள்",
+  "addExpense": "செலவு சேர்",
+  "amount": "தொகை",
+  "description": "விளக்கம்",
+  "category": "வகை",
+  "paidBy": "யார் செலுத்தினர்",
+  "splitWith": "யாருடன் பிரி",
+  "splitEqual": "சம பங்கிடு",
+  "splitCustom": "தனிப்பயன் பிரிப்பு",
+  "date": "தேதி",
+  "receiptOCR": "ரசீதை ஸ்கேன் செய்",
+  "uploading": "ரசீதை பதிவேற்றுகிறது…",
+  "categories": {
+    "food": "உணவு & பானங்கள்",
+    "transport": "போக்குவரத்து",
+    "accommodation": "தங்குமிடம்",
+    "activities": "செயல்பாடுகள்",
+    "shopping": "கடை",
+    "medical": "மருத்துவம்",
+    "other": "மற்றவை"
+  },
+  "noExpenses": "இன்னும் எந்த செலவும் பதிவு செய்யப்படவில்லை",
+  "totalExpenses": "மொத்த செலவுகள்",
+  "myShare": "என் பங்கு",
+  "deleteExpense": "செலவை நீக்கு"
+}

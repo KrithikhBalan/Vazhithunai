@@ -1,0 +1,20 @@
+{
+  "reports": "அறிக்கைகள்",
+  "tripReport": "பயண அறிக்கை",
+  "expenseSummary": "செலவு சுருக்கம்",
+  "byCategory": "வகையின்படி",
+  "byMember": "உறுப்பினரின்படி",
+  "timeline": "காலவரிசை",
+  "exportPDF": "PDF ஆக ஏற்றுமதி",
+  "exportCSV": "CSV ஆக ஏற்றுமதி",
+  "shareReport": "அறிக்கையை பகிர்",
+  "aiSummary": "AI சுருக்கம்",
+  "generatingSummary": "சுருக்கம் உருவாக்குகிறது…",
+  "topSpender": "அதிகம் செலவு செய்தவர்",
+  "avgPerPerson": "ஒருவருக்கு சராசரி",
+  "mostExpensiveDay": "மிகவும் செலவான நாள்",
+  "savingsInsight": "சேமிப்பு நுண்ணறிவு",
+  "totalTrips": "மொத்த பயணங்கள்",
+  "totalSpent": "மொத்தம் செலவு",
+  "currency": "₹"
+}

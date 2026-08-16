@@ -1,0 +1,29 @@
+{
+  "appName": "Vazhithunai",
+  "tagline": "Your AI travel companion",
+  "getStarted": "Get Started",
+  "continue": "Continue",
+  "back": "Back",
+  "cancel": "Cancel",
+  "save": "Save",
+  "done": "Done",
+  "loading": "Loading…",
+  "error": "Something went wrong. Please try again.",
+  "retry": "Retry",
+  "language": "Language",
+  "english": "English",
+  "tamil": "தமிழ்",
+  "nav": {
+    "trips": "Trips",
+    "expenses": "Expenses",
+    "settlement": "Settlement",
+    "explore": "Explore",
+    "reports": "Reports",
+    "profile": "Profile"
+  },
+  "greeting": "Welcome back",
+  "noData": "Nothing here yet",
+  "signOut": "Sign Out",
+  "profile": "Profile",
+  "settings": "Settings"
+}

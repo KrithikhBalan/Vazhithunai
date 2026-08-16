@@ -1,0 +1,21 @@
+{
+  "settlement": "Settlement",
+  "balances": "Balances",
+  "youOwe": "You owe",
+  "youAreOwed": "You are owed",
+  "settled": "Settled",
+  "markSettled": "Mark as Settled",
+  "payViaUPI": "Pay via UPI",
+  "upiId": "UPI ID",
+  "upiIdPlaceholder": "name@upi",
+  "sendMoney": "Send Money",
+  "requestMoney": "Request Money",
+  "splitSummary": "Split Summary",
+  "totalOwed": "Total Owed",
+  "totalOwedToYou": "Total Owed to You",
+  "settleUp": "Settle Up",
+  "allSettled": "All settled! 🎉",
+  "paymentNote": "Payments are made directly via your UPI app. Vazhithunai never handles your money.",
+  "confirmSettlement": "Confirm Settlement",
+  "settlementRecorded": "Settlement recorded successfully"
+}

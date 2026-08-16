@@ -1,0 +1,23 @@
+{
+  "myTrips": "My Trips",
+  "newTrip": "New Trip",
+  "tripName": "Trip Name",
+  "destination": "Destination",
+  "startDate": "Start Date",
+  "endDate": "End Date",
+  "members": "Members",
+  "addMember": "Add Member",
+  "tripCode": "Trip Code",
+  "joinTrip": "Join a Trip",
+  "enterCode": "Enter trip code",
+  "createTrip": "Create Trip",
+  "deleteTrip": "Delete Trip",
+  "tripDetails": "Trip Details",
+  "upcoming": "Upcoming",
+  "ongoing": "Ongoing",
+  "completed": "Completed",
+  "noTrips": "No trips yet. Plan your first adventure!",
+  "totalBudget": "Total Budget",
+  "spent": "Spent",
+  "remaining": "Remaining"
+}

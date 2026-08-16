@@ -1,0 +1,20 @@
+{
+  "reports": "Reports",
+  "tripReport": "Trip Report",
+  "expenseSummary": "Expense Summary",
+  "byCategory": "By Category",
+  "byMember": "By Member",
+  "timeline": "Timeline",
+  "exportPDF": "Export as PDF",
+  "exportCSV": "Export as CSV",
+  "shareReport": "Share Report",
+  "aiSummary": "AI Summary",
+  "generatingSummary": "Generating summary…",
+  "topSpender": "Top Spender",
+  "avgPerPerson": "Average Per Person",
+  "mostExpensiveDay": "Most Expensive Day",
+  "savingsInsight": "Savings Insight",
+  "totalTrips": "Total Trips",
+  "totalSpent": "Total Spent",
+  "currency": "₹"
+}

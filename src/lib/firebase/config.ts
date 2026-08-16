@@ -1,0 +1,30 @@
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
+
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+};
+
+// Only initialize Firebase in browser environments.
+// During Next.js server-side/static rendering, skip initialization
+// to prevent auth/invalid-api-key errors when .env.local is not set.
+const isClient = typeof window !== "undefined";
+
+const app = isClient
+  ? getApps().length === 0
+    ? initializeApp(firebaseConfig)
+    : getApp()
+  : // Return a dummy value during SSR — never used as providers are client-only
+    null!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+
+export const auth = isClient ? getAuth(app) : null!;
+export const db = isClient ? getFirestore(app) : null!;
+export const storage = isClient ? getStorage(app) : null!;
+export default app;

@@ -1,0 +1,28 @@
+{
+  "name": "Vazhithunai — AI Travel Companion",
+  "short_name": "Vazhithunai",
+  "description": "Bilingual AI-powered trip planning and expense splitting for Tamil Nadu travelers",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0D9488",
+  "background_color": "#0A1628",
+  "icons": [
+    {
+      "src": "/icon-512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["travel", "finance", "utilities"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false
+}
