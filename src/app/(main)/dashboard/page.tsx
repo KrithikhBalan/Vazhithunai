@@ -177,19 +177,27 @@ export default function DashboardPage() {
             {trips[0] && (
               <div className="flex flex-wrap gap-2">
                 <Link
-                  href={`/trips/${trips[0].tripId}/expenses`}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-teal-600 hover:bg-teal-500 transition-all shadow-lg shadow-teal-950/50 active:scale-95"
+                  href="/explore"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-500 hover:to-teal-400 transition-all shadow-lg shadow-teal-950/50 active:scale-95"
                 >
-                  <Receipt className="h-4 w-4" />
-                  <span>{t("expenses.ledger")}</span>
+                  <Compass className="h-4 w-4" />
+                  <span>{t("tourist.explore")}</span>
                 </Link>
 
                 <Link
-                  href={`/trips/${trips[0].tripId}/expenses/new`}
+                  href={`/trips/${trips[0].tripId}/route`}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-teal-300 bg-teal-950/60 border border-teal-500/40 hover:bg-teal-900/60 transition-all active:scale-95"
                 >
-                  <Plus className="h-4 w-4" />
-                  <span>{t("expenses.addExpense")}</span>
+                  <Route className="h-4 w-4" />
+                  <span>{t("tourist.routeAndCost")}</span>
+                </Link>
+
+                <Link
+                  href={`/trips/${trips[0].tripId}/expenses`}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-200 bg-white/5 border border-white/10 hover:bg-white/10 transition-all active:scale-95"
+                >
+                  <Receipt className="h-4 w-4" />
+                  <span>{t("expenses.ledger")}</span>
                 </Link>
 
                 <Link
