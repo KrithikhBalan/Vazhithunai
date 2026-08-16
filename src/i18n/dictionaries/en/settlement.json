@@ -1,4 +1,5 @@
 {
+  "_purpose": "English translations for the Settlement Screen (SCR-13) including balance labels, UPI payment prompts, and status indicators.",
   "settlement": "Settlement",
   "balances": "Balances",
   "youOwe": "You owe",
@@ -36,3 +37,4 @@
   "enterUpiRef": "Enter UPI transaction ID (optional)",
   "confirmPaid": "Confirm Payment"
 }
+

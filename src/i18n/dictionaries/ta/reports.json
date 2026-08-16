@@ -1,4 +1,5 @@
 {
+  "_purpose": "Tamil translations for the Trip Reports and PDF Export module screens.",
   "reports": "அறிக்கைகள்",
   "tripReport": "பயண அறிக்கை",
   "expenseSummary": "செலவு சுருக்கம்",
@@ -18,3 +19,4 @@
   "totalSpent": "மொத்தம் செலவு",
   "currency": "₹"
 }
+

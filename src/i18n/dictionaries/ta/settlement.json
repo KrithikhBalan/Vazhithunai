@@ -1,4 +1,5 @@
 {
+  "_purpose": "Tamil translations for the Settlement Screen (SCR-13) including balance labels, UPI payment prompts, and status indicators.",
   "settlement": "தீர்வு",
   "balances": "இருப்புகள்",
   "youOwe": "நீங்கள் கொடுக்க வேண்டியது",
@@ -36,3 +37,4 @@
   "enterUpiRef": "UPI பரிவர்த்தனை ஐடி உள்ளிடவும் (விரும்பினால்)",
   "confirmPaid": "கட்டணத்தை உறுதிப்படுத்து"
 }
+

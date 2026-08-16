@@ -1,4 +1,5 @@
 {
+  "_purpose": "Tamil (?????) translations for common UI labels, navigation items, and shared text used across all screens.",
   "appName": "வழித்துணை",
   "tagline": "உங்கள் AI பயண துணை",
   "getStarted": "தொடங்குவோம்",
@@ -27,3 +28,4 @@
   "profile": "சுயவிவரம்",
   "settings": "அமைப்புகள்"
 }
+

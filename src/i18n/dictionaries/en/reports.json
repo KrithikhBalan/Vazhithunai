@@ -1,4 +1,5 @@
 {
+  "_purpose": "English translations for the Trip Reports and PDF Export module screens.",
   "reports": "Reports",
   "tripReport": "Trip Report",
   "expenseSummary": "Expense Summary",
@@ -18,3 +19,4 @@
   "totalSpent": "Total Spent",
   "currency": "₹"
 }
+

@@ -1,4 +1,5 @@
 {
+  "_purpose": "PWA Web App Manifest defining app icons, theme colors, display mode, and metadata for installable Progressive Web App support.",
   "name": "Vazhithunai — AI Travel Companion",
   "short_name": "Vazhithunai",
   "description": "Bilingual AI-powered trip planning and expense splitting for Tamil Nadu travelers",
@@ -26,3 +27,4 @@
   "dir": "ltr",
   "prefer_related_applications": false
 }
+

@@ -1,4 +1,5 @@
 {
+  "_purpose": "English translations for trip planning and management screens.",
   "myTrips": "My Trips",
   "newTrip": "New Trip",
   "tripName": "Trip Name",
@@ -21,3 +22,4 @@
   "spent": "Spent",
   "remaining": "Remaining"
 }
+
