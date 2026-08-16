@@ -22,6 +22,7 @@ import {
   ArrowRight,
   Sparkles,
   Wallet,
+  Route,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -255,19 +256,34 @@ export default function DashboardPage() {
                     {trip.description || "Trip with friends"}
                   </p>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs text-gray-400">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-white/5 text-xs text-gray-400">
                     <span className="flex items-center gap-1">
                       <Users className="h-3.5 w-3.5 text-teal-400" />
                       <span>{trip.members?.length || 0} {lang === "ta" ? "உறுப்பினர்கள்" : "members"}</span>
+                      {trip.stops && trip.stops.length > 0 && (
+                        <span className="ml-1 text-[10px] text-teal-300 bg-teal-500/10 px-1.5 py-0.5 rounded">
+                          {trip.stops.length} {lang === "ta" ? "நிறுத்தங்கள்" : "stops"}
+                        </span>
+                      )}
                     </span>
 
-                    <Link
-                      href={`/trips/${trip.tripId}/expenses`}
-                      className="flex items-center gap-1 text-teal-400 hover:text-teal-300 font-semibold transition-colors"
-                    >
-                      <span>{t("expenses.ledger")}</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
+                    <div className="flex items-center gap-3">
+                      <Link
+                        href={`/trips/${trip.tripId}/route`}
+                        className="flex items-center gap-1 text-teal-400 hover:text-teal-300 font-semibold transition-colors"
+                      >
+                        <Route className="h-3.5 w-3.5" />
+                        <span>{lang === "ta" ? "பாதை" : "Route"}</span>
+                      </Link>
+
+                      <Link
+                        href={`/trips/${trip.tripId}/expenses`}
+                        className="flex items-center gap-1 text-teal-400 hover:text-teal-300 font-semibold transition-colors"
+                      >
+                        <span>{t("expenses.ledger")}</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
                   </div>
                 </div>
               ))}
