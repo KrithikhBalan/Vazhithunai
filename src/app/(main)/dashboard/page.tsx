@@ -171,6 +171,14 @@ export default function DashboardPage() {
                   <Plus className="h-4 w-4" />
                   <span>{t("expenses.addExpense")}</span>
                 </Link>
+
+                <Link
+                  href={`/trips/${trips[0].tripId}/settlement`}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-amber-300 bg-amber-950/60 border border-amber-500/40 hover:bg-amber-900/60 transition-all active:scale-95"
+                >
+                  <Wallet className="h-4 w-4" />
+                  <span>{t("settlement.settleUp")}</span>
+                </Link>
               </div>
             )}
           </div>

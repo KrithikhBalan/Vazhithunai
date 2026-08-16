@@ -1,4 +1,5 @@
 {
+  "$comment": "Purpose: TypeScript compiler configuration for Vazhithunai — enables strict type checking, Next.js App Router support, path aliases (@/*), and module resolution settings.",
   "compilerOptions": {
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],

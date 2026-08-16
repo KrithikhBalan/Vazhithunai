@@ -1,4 +1,5 @@
 {
+  "$comment": "Purpose: Node.js project manifest for Vazhithunai — defines dependencies (Firebase, Next.js, Zustand, Tailwind CSS), npm scripts (dev/build/lint), and project metadata.",
   "name": "vazhithunai",
   "version": "0.1.0",
   "private": true,

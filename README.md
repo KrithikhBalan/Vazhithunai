@@ -1,3 +1,5 @@
+> **Purpose**: Project documentation for Vazhithunai (வழித்துணை) — bilingual AI-powered trip planning and expense splitting platform. Contains setup instructions, architecture overview, and development guide.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
