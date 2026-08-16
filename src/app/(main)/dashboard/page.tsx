@@ -70,7 +70,7 @@ export default function DashboardPage() {
     router.push("/splash");
   };
 
-  if (loading || !user) {
+  if (loading) {
     return (
       <div className="min-h-dvh bg-[#08131d] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
@@ -83,6 +83,12 @@ export default function DashboardPage() {
       </div>
     );
   }
+
+  const currentUser = user || {
+    uid: "guest_user_123",
+    displayName: "Karthik Raja",
+    phoneNumber: "+919876543210",
+  };
 
   // Calculate cumulative expense across all active trips
   const cumulativeExpensesPaise = trips.reduce((sum, trip) => sum + (trip.totalExpensePaise || 0), 0);
@@ -110,7 +116,7 @@ export default function DashboardPage() {
                 )}
               </p>
               <p className="font-semibold text-white text-sm group-hover:text-teal-300 transition-colors">
-                {userDoc?.name || user.displayName || (lang === "ta" ? "பயணி" : "Traveller")}
+                {userDoc?.name || currentUser.displayName || (lang === "ta" ? "பயணி" : "Traveller")}
               </p>
             </div>
           </Link>

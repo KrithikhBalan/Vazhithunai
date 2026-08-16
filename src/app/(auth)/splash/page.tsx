@@ -156,7 +156,7 @@ export default function SplashPage() {
       <section className="flex-1 flex flex-col items-center justify-center gap-8 relative z-10 w-full max-w-sm">
         {/* Kolam icon with glow */}
         <div className="relative">
-          <div className="absolute inset-0 rounded-full bg-teal-500/20 blur-2xl scale-150 animate-pulse-glow" />
+          <div className="absolute inset-0 rounded-full bg-teal-500/20 blur-2xl scale-150 animate-pulse-glow pointer-events-none" />
           <div className="relative w-32 h-32">
             <Image
               src="/icon-512.jpg"
