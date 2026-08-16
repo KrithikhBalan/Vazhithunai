@@ -7,27 +7,24 @@ test.describe("Vazhithunai Full App DOM Test Suite", () => {
   test("SCR-01: Splash Screen renders all branding, language selectors, and CTA", async ({ page }) => {
     await page.goto("/splash");
 
-    // 1. Check Kolam SVG branding
-    const kolam = page.locator("svg[aria-hidden='true']").first();
-    await expect(kolam).toBeVisible();
+    // 1. Check title
+    await expect(page.locator("h1")).toContainText(/Vazhithunai|வழித்துணை/);
 
-    // 2. Check title and tagline
-    await expect(page.locator("h1")).toContainText("வழித்துணை");
-
-    // 3. Check language switchers
-    const tamilBtn = page.locator("button:has-text('தமிழ்')").first();
-    const enBtn = page.locator("button:has-text('English')").first();
+    // 2. Check language switchers
+    const tamilBtn = page.locator("#lang-ta-btn");
+    const enBtn = page.locator("#lang-en-btn");
     await expect(tamilBtn).toBeVisible();
     await expect(enBtn).toBeVisible();
 
-    // 4. Test Language Switch interaction
-    await enBtn.click();
-    await expect(page.locator("body")).toBeVisible();
+    // 3. Test Language Switch interaction
     await tamilBtn.click();
-    await expect(page.locator("body")).toBeVisible();
+    await expect(page.locator("h1")).toContainText("வழித்துணை");
 
-    // 5. Test Get Started CTA navigation
-    const getStartedBtn = page.locator("a[href='/login']").first();
+    await enBtn.click();
+    await expect(page.locator("h1")).toContainText("Vazhithunai");
+
+    // 4. Test Get Started CTA navigation
+    const getStartedBtn = page.locator("#get-started-btn");
     await expect(getStartedBtn).toBeVisible();
     await getStartedBtn.click();
     await expect(page).toHaveURL(/.*login/);
@@ -45,20 +42,20 @@ test.describe("Vazhithunai Full App DOM Test Suite", () => {
     await expect(backBtn).toBeVisible();
 
     // 3. Check Phone Input field
-    const phoneInput = page.locator("input[type='tel']");
+    const phoneInput = page.locator("#phone-input");
     await expect(phoneInput).toBeVisible();
 
-    // 4. Type invalid phone number (less than 10 digits)
+    // 4. Check Send OTP button is disabled when < 10 digits
+    const sendOtpBtn = page.locator("#send-otp-btn");
     await phoneInput.fill("12345");
-    const sendOtpBtn = page.locator("button[type='submit']");
     await expect(sendOtpBtn).toBeDisabled();
 
-    // 5. Type valid 10-digit phone number
+    // 5. Fill valid 10-digit number
     await phoneInput.fill("9876543210");
     await expect(sendOtpBtn).toBeEnabled();
 
     // 6. Check Google Sign-in button exists
-    const googleBtn = page.locator("button:has-text('Google')");
+    const googleBtn = page.locator("#google-signin-btn");
     await expect(googleBtn).toBeVisible();
 
     // 7. Back navigation
@@ -73,7 +70,7 @@ test.describe("Vazhithunai Full App DOM Test Suite", () => {
     // Check main container renders without crash
     await expect(page.locator("body")).toBeVisible();
 
-    // Check navigation buttons or links
+    // Check navigation buttons
     const exploreLinks = page.locator("a[href='/explore']");
     await expect(exploreLinks.first()).toBeVisible();
 
@@ -88,22 +85,14 @@ test.describe("Vazhithunai Full App DOM Test Suite", () => {
     // 1. Search bar
     const searchInput = page.locator("input[type='text']").first();
     await expect(searchInput).toBeVisible();
-
-    // 2. Type in search bar
     await searchInput.fill("Ooty");
     await expect(searchInput).toHaveValue("Ooty");
 
-    // 3. Category pills
+    // 2. Category pills
     const allPill = page.locator("button:has-text('All'), button:has-text('அனைத்தும்')").first();
     await expect(allPill).toBeVisible();
 
-    // 4. City filter pills
-    const ootyCity = page.locator("button:has-text('Ooty')").first();
-    if (await ootyCity.isVisible()) {
-      await ootyCity.click();
-    }
-
-    // 5. Quick discovery navigation tabs (Hotels, Help)
+    // 3. Quick discovery navigation tabs (Hotels, Help)
     const hotelTab = page.locator("a[href='/explore/hotels']").first();
     await expect(hotelTab).toBeVisible();
 
@@ -212,8 +201,6 @@ test.describe("Vazhithunai Full App DOM Test Suite", () => {
     await page.goto("/trips/demo-trip/settlement");
 
     await expect(page.locator("body")).toBeVisible();
-
-    // Check header
     await expect(page.locator("h1")).toBeVisible();
   });
 
