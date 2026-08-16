@@ -1,4 +1,4 @@
-// Purpose: React Context and hook (useLanguage) providing reactive language switching, translation function t(namespace, key), and syncing preferences to Firestore and localStorage.
+// Purpose: React Context and hook (useLanguage) providing reactive language switching, translation function t(namespace, key) or t("namespace.key"), and syncing preferences to Firestore and localStorage.
 
 "use client";
 
@@ -20,10 +20,11 @@ import {
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
-interface LanguageContextValue {
+export interface LanguageContextValue {
   lang: Language;
   setLang: (lang: Language) => Promise<void>;
-  t: (namespace: Namespace, key: string) => string;
+  setLanguage: (lang: Language) => Promise<void>;
+  t: (namespaceOrPath: Namespace | string, key?: string) => string;
   isLoading: boolean;
 }
 
@@ -71,17 +72,31 @@ export function LanguageProvider({ children, uid }: LanguageProviderProps) {
   );
 
   const t = useCallback(
-    (namespace: Namespace, key: string): string => {
-      if (!dicts) return key;
-      const dict = dicts[namespace];
-      if (!dict) return key;
-      return translate(dict, key);
+    (namespaceOrPath: Namespace | string, key?: string): string => {
+      if (!dicts) return key || namespaceOrPath;
+
+      if (key !== undefined) {
+        // Called as t("expenses", "addExpense")
+        const dict = dicts[namespaceOrPath as Namespace];
+        if (!dict) return key;
+        return translate(dict, key);
+      } else {
+        // Called as t("expenses.categories.fuel") or t("expenses.addExpense")
+        const parts = namespaceOrPath.split(".");
+        const ns = parts[0] as Namespace;
+        const subKey = parts.slice(1).join(".");
+        const dict = dicts[ns];
+        if (!dict) return namespaceOrPath;
+        return translate(dict, subKey);
+      }
     },
     [dicts]
   );
 
   return (
-    <LanguageContext.Provider value={{ lang, setLang, t, isLoading }}>
+    <LanguageContext.Provider
+      value={{ lang, setLang, setLanguage: setLang, t, isLoading }}
+    >
       {children}
     </LanguageContext.Provider>
   );
