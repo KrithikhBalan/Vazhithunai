@@ -260,10 +260,10 @@ export default function ProfilePage() {
               <BadgeCheck className="h-4 w-4 text-teal-400 shrink-0" />
             </div>
 
-            {user.phoneNumber && (
+            {currentUser.phoneNumber && (
               <p className="text-xs text-teal-300/90 flex items-center gap-1.5 font-mono mt-0.5">
                 <Phone className="h-3 w-3 text-teal-400" />
-                <span>{formatPhone(user.phoneNumber)}</span>
+                <span>{formatPhone(currentUser.phoneNumber)}</span>
               </p>
             )}
 
@@ -365,7 +365,7 @@ export default function ProfilePage() {
               <input
                 type="text"
                 readOnly
-                value={user.phoneNumber ? formatPhone(user.phoneNumber) : "—"}
+                value={currentUser.phoneNumber ? formatPhone(currentUser.phoneNumber) : "—"}
                 className="w-full px-4 py-3 rounded-2xl bg-white/[0.02] border border-white/5 text-gray-400 text-sm font-mono cursor-not-allowed"
               />
               <Phone className="absolute right-4 top-3.5 h-4 w-4 text-gray-600" />
@@ -477,7 +477,7 @@ export default function ProfilePage() {
           <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1 text-xs text-gray-500">
             <p className="flex items-center justify-between">
               <span>Account UID:</span>
-              <span className="font-mono text-gray-400">{user.uid.substring(0, 16)}…</span>
+              <span className="font-mono text-gray-400">{currentUser.uid.substring(0, 16)}…</span>
             </p>
             {userDoc?.createdAt && (
               <p className="flex items-center justify-between">
