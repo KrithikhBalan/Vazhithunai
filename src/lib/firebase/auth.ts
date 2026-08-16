@@ -20,28 +20,35 @@ declare global {
 }
 
 /**
- * Initialises (or reuses) an invisible reCAPTCHA verifier bound to `containerId`.
- * Safely handles React fast-refresh and re-renders so "already rendered" errors never occur.
+ * Creates a clean, fresh invisible RecaptchaVerifier instance.
+ * Completely clears any previous widgets from the DOM to eliminate "already rendered" errors.
  */
-export function getOrInitRecaptcha(containerId: string): RecaptchaVerifier {
+export function createFreshRecaptcha(containerId: string): RecaptchaVerifier {
   if (typeof window === "undefined") {
-    throw new Error("reCAPTCHA can only be initialized in the browser.");
+    throw new Error("reCAPTCHA can only be run in the browser.");
   }
 
-  // Return existing active verifier if already created
+  // 1. Destroy previous instance
   if (window.recaptchaVerifier) {
-    return window.recaptchaVerifier;
+    try {
+      window.recaptchaVerifier.clear();
+    } catch {
+      // Ignore if already cleared
+    }
+    window.recaptchaVerifier = null;
   }
 
+  // 2. Wipe DOM container completely
   const container = document.getElementById(containerId);
   if (container) {
     container.innerHTML = "";
   }
 
+  // 3. Instantiate brand new verifier
   const verifier = new RecaptchaVerifier(auth, containerId, {
     size: "invisible",
     callback: () => {
-      // reCAPTCHA solved
+      // Invisible reCAPTCHA completed
     },
     "expired-callback": () => {
       clearRecaptcha(containerId);
@@ -59,7 +66,7 @@ export function clearRecaptcha(containerId?: string) {
       try {
         window.recaptchaVerifier.clear();
       } catch {
-        // Ignore clear error if already disposed
+        // Ignore clear error
       }
       window.recaptchaVerifier = null;
     }
