@@ -278,6 +278,14 @@ export default function DashboardPage() {
                       </Link>
 
                       <Link
+                        href={`/trips/${trip.tripId}/report`}
+                        className="flex items-center gap-1 text-teal-400 hover:text-teal-300 font-semibold transition-colors"
+                      >
+                        <FileText className="h-3.5 w-3.5" />
+                        <span>{lang === "ta" ? "அறிக்கை" : "Report"}</span>
+                      </Link>
+
+                      <Link
                         href={`/trips/${trip.tripId}/expenses`}
                         className="flex items-center gap-1 text-teal-400 hover:text-teal-300 font-semibold transition-colors"
                       >

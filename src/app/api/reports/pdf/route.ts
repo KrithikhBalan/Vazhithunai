@@ -47,7 +47,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const filename = `Vazhithunai_${safeName}_Report.pdf`;
 
     // 5. Return the PDF buffer with correct headers
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
