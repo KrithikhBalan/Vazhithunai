@@ -70,13 +70,6 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [customAvatarInput, setCustomAvatarInput] = useState(false);
 
-  // Authentication guard
-  useEffect(() => {
-    if (!loading && !user) {
-      router.replace("/splash");
-    }
-  }, [user, loading, router]);
-
   // Sync state from Firestore userDoc or Auth user
   useEffect(() => {
     if (userDoc) {
