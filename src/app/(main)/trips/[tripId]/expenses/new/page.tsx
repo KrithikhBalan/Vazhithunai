@@ -350,7 +350,7 @@ export default function AddExpensePage() {
             </div>
           )}
 
-          {/* ─── Receipt / Bill Photo Uploader & OCR Hook ─── */}}
+          {/* ─── Receipt / Bill Photo Uploader & OCR Hook ─── */}
           <ReceiptUploader
             receiptFile={receiptFile}
             receiptUrl={null}

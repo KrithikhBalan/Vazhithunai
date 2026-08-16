@@ -14,7 +14,7 @@ import { SplitModeSelector } from "@/components/expenses/SplitModeSelector";
 import { ReceiptUploader } from "@/components/expenses/ReceiptUploader";
 import { computeSplitDetails } from "@/lib/splitCalculators";
 import { inrToPaise, formatPaise } from "@/lib/utils";
-import { ArrowLeft, Save, UserCheck } from "lucide-react";
+import { ArrowLeft, Save, UserCheck, Sparkles, CheckCircle2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 
@@ -47,6 +47,13 @@ export default function EditExpensePage() {
   // Receipt File
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
+
+  // AI OCR suggestion state
+  const [ocrSuggestion, setOcrSuggestion] = useState<{
+    amountPaise?: number;
+    description?: string;
+    category?: string;
+  } | null>(null);
 
   // Fetch trip & expense
   useEffect(() => {
@@ -313,11 +320,70 @@ export default function EditExpensePage() {
             validationError={splitComputation.errorMessage}
           />
 
+          {/* ─── AI OCR Suggestion Banner ─── */}
+          {ocrSuggestion && (
+            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2 text-xs font-bold text-amber-300">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {lang === "ta" ? "AI மதிப்பீடு — உறுதிப்படுத்தவும்" : "AI Suggestion — Please verify before saving"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setOcrSuggestion(null)}
+                  className="p-1 rounded-lg text-gray-400 hover:text-white"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <div className="grid grid-cols-1 gap-1.5 text-xs text-gray-200">
+                {ocrSuggestion.amountPaise !== undefined && ocrSuggestion.amountPaise > 0 && (
+                  <p>💰 {lang === "ta" ? "தொகை" : "Amount"}: <strong className="text-white font-mono">₹{(ocrSuggestion.amountPaise / 100).toFixed(2)}</strong></p>
+                )}
+                {ocrSuggestion.description && (
+                  <p>📝 {lang === "ta" ? "விவரம்" : "Description"}: <strong className="text-white">{ocrSuggestion.description}</strong></p>
+                )}
+                {ocrSuggestion.category && (
+                  <p>🏷️ {lang === "ta" ? "வகை" : "Category"}: <strong className="text-white">{ocrSuggestion.category}</strong></p>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (ocrSuggestion.amountPaise && ocrSuggestion.amountPaise > 0) {
+                      setAmountPaise(ocrSuggestion.amountPaise);
+                      setAmountStr((ocrSuggestion.amountPaise / 100).toFixed(2));
+                    }
+                    if (ocrSuggestion.description) setDescription(ocrSuggestion.description);
+                    if (ocrSuggestion.category) setCategory(ocrSuggestion.category as ExpenseCategory);
+                    setOcrSuggestion(null);
+                    toast.success(lang === "ta" ? "AI மதிப்பீடு பயன்படுத்தப்பட்டது" : "AI suggestion applied");
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold transition-all active:scale-95"
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  {lang === "ta" ? "ஏற்றுக்கொள்" : "Accept Suggestion"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOcrSuggestion(null)}
+                  className="px-3 py-2 rounded-xl bg-white/10 text-gray-300 text-xs font-semibold hover:bg-white/20 transition-all"
+                >
+                  {lang === "ta" ? "நிராகரி" : "Dismiss"}
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Receipt Uploader */}
           <ReceiptUploader
             receiptFile={receiptFile}
             receiptUrl={receiptUrl}
             onSelectFile={setReceiptFile}
+            onOcrExtracted={(details) => {
+              setOcrSuggestion(details);
+            }}
           />
 
           {/* Save / Update Button */}
