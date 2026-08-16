@@ -79,6 +79,28 @@ export default function AddExpensePage() {
           setSelectedParticipants(demo.members.map((m) => m.memberId));
           setLoading(false);
         });
+      } else {
+        const sampleDemo: TripDocument = {
+          tripId: tripId || "demo-trip",
+          name: "Ooty Trip 2026",
+          destination: "Ooty, Tamil Nadu",
+          startDate: "2026-08-20",
+          endDate: "2026-08-25",
+          createdBy: "user_demo",
+          totalExpensePaise: 0,
+          stops: [],
+          members: [
+            { memberId: "m1", name: "Anand", phone: "+919876543210", upiId: "anand@okhdfcbank", joinedAt: {} as any },
+            { memberId: "m2", name: "Bala", phone: "+919876543211", upiId: "bala@paytm", joinedAt: {} as any },
+            { memberId: "m3", name: "Chitra", phone: "+919876543212", upiId: "chitra@ybl", joinedAt: {} as any },
+          ],
+          memberIds: ["m1", "m2", "m3"],
+          createdAt: {} as any,
+        };
+        setTrip(sampleDemo);
+        setPaidBy("m1");
+        setSelectedParticipants(["m1", "m2", "m3"]);
+        setLoading(false);
       }
     });
 
