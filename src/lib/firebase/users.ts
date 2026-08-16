@@ -130,16 +130,24 @@ export async function updateUserUpiId(
 }
 
 /**
- * Updates the user's profile information (name, upiId, language).
+ * Updates the user's profile information (name, email, photoURL, upiId, language).
  */
 export async function updateUserProfile(
   uid: string,
-  updates: { name?: string; upiId?: string | null; languagePreference?: Language }
+  updates: {
+    name?: string;
+    email?: string | null;
+    photoURL?: string | null;
+    upiId?: string | null;
+    languagePreference?: Language;
+  }
 ): Promise<void> {
   if (!uid) return;
   const ref = doc(db, "users", uid);
   const payload: Record<string, any> = { updatedAt: serverTimestamp() };
   if (updates.name !== undefined) payload.name = updates.name.trim();
+  if (updates.email !== undefined) payload.email = updates.email ? updates.email.trim() : null;
+  if (updates.photoURL !== undefined) payload.photoURL = updates.photoURL ? updates.photoURL.trim() : null;
   if (updates.upiId !== undefined) payload.upiId = updates.upiId ? updates.upiId.trim() : null;
   if (updates.languagePreference !== undefined) payload.languagePreference = updates.languagePreference;
 
