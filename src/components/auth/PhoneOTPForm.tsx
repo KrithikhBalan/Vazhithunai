@@ -5,7 +5,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { ConfirmationResult } from "firebase/auth";
-import { initRecaptcha, clearRecaptcha, sendOTP, confirmOTP } from "@/lib/firebase/auth";
+import { getOrInitRecaptcha, clearRecaptcha, sendOTP, confirmOTP } from "@/lib/firebase/auth";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
@@ -36,7 +36,9 @@ export function PhoneOTPForm() {
   }, [countdown]);
 
   useEffect(() => {
-    return () => clearRecaptcha();
+    return () => {
+      clearRecaptcha(recaptchaContainerId);
+    };
   }, []);
 
   // ─── Send OTP ───────────────────────────────────────────────────────────────
@@ -59,7 +61,7 @@ export function PhoneOTPForm() {
 
     setLoading(true);
     try {
-      const verifier = initRecaptcha(recaptchaContainerId);
+      const verifier = getOrInitRecaptcha(recaptchaContainerId);
       const result = await sendOTP(e164, verifier);
       setConfirmationResult(result);
       setStep("otp");
@@ -70,11 +72,13 @@ export function PhoneOTPForm() {
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
     } catch (err: unknown) {
       const errObj = err as { code?: string; message?: string };
+      console.error("sendOTP error:", err);
+
       if (errObj.code === "auth/operation-not-allowed") {
         toast.error(
           lang === "ta"
-            ? "Firebase Console-ல் 'Phone' முறை இயக்கப்படவில்லை. Sign-in method-ல் Phone-ஐ Enable செய்யவும்."
-            : "Phone sign-in is disabled. Please enable 'Phone' in Firebase Console > Authentication > Sign-in method.",
+            ? "Firebase Console-ல் 'Phone' முறை இயக்கப்படவில்லை அல்லது SMS Region அனுமதிக்கப்படவில்லை."
+            : "Phone sign-in is disabled or SMS region is restricted. Check Firebase Console.",
           { duration: 8000 }
         );
       } else if (errObj.code === "auth/invalid-phone-number") {
@@ -89,7 +93,7 @@ export function PhoneOTPForm() {
         const msg = errObj.message || "Failed to send OTP";
         toast.error(msg);
       }
-      clearRecaptcha();
+      clearRecaptcha(recaptchaContainerId);
     } finally {
       setLoading(false);
     }
@@ -162,7 +166,7 @@ export function PhoneOTPForm() {
     setStep("phone");
     setOtp(["", "", "", "", "", ""]);
     setConfirmationResult(null);
-    clearRecaptcha();
+    clearRecaptcha(recaptchaContainerId);
   };
 
   // ─── Render ──────────────────────────────────────────────────────────────────

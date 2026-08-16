@@ -13,34 +13,60 @@ import { auth } from "./config";
 
 // ─── reCAPTCHA Verifier ───────────────────────────────────────────────────────
 
-let recaptchaVerifier: RecaptchaVerifier | null = null;
+declare global {
+  interface Window {
+    recaptchaVerifier?: RecaptchaVerifier | null;
+  }
+}
 
 /**
  * Initialises (or reuses) an invisible reCAPTCHA verifier bound to `containerId`.
- * Call this once on mount of the Login screen before sending OTP.
+ * Safely handles React fast-refresh and re-renders so "already rendered" errors never occur.
  */
-export function initRecaptcha(containerId: string): RecaptchaVerifier {
-  if (recaptchaVerifier) {
-    recaptchaVerifier.clear();
-    recaptchaVerifier = null;
+export function getOrInitRecaptcha(containerId: string): RecaptchaVerifier {
+  if (typeof window === "undefined") {
+    throw new Error("reCAPTCHA can only be initialized in the browser.");
   }
-  recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+
+  // Return existing active verifier if already created
+  if (window.recaptchaVerifier) {
+    return window.recaptchaVerifier;
+  }
+
+  const container = document.getElementById(containerId);
+  if (container) {
+    container.innerHTML = "";
+  }
+
+  const verifier = new RecaptchaVerifier(auth, containerId, {
     size: "invisible",
     callback: () => {
-      // reCAPTCHA solved — OTP send can proceed
+      // reCAPTCHA solved
     },
     "expired-callback": () => {
-      recaptchaVerifier = null;
+      clearRecaptcha(containerId);
     },
   });
-  return recaptchaVerifier;
+
+  window.recaptchaVerifier = verifier;
+  return verifier;
 }
 
-/** Clears the reCAPTCHA verifier (call on unmount) */
-export function clearRecaptcha() {
-  if (recaptchaVerifier) {
-    recaptchaVerifier.clear();
-    recaptchaVerifier = null;
+/** Clears the reCAPTCHA verifier and cleans up container DOM */
+export function clearRecaptcha(containerId?: string) {
+  if (typeof window !== "undefined") {
+    if (window.recaptchaVerifier) {
+      try {
+        window.recaptchaVerifier.clear();
+      } catch {
+        // Ignore clear error if already disposed
+      }
+      window.recaptchaVerifier = null;
+    }
+    if (containerId) {
+      const el = document.getElementById(containerId);
+      if (el) el.innerHTML = "";
+    }
   }
 }
 
