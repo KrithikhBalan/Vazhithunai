@@ -1,4 +1,4 @@
-// Purpose: Firestore CRUD operations and real-time listeners for Trips and trip member management.
+// Purpose: Firestore CRUD operations and real-time listeners for Trips with memberIds query indexing matching Firestore security rules.
 
 import { db } from "./config";
 import {
@@ -11,27 +11,29 @@ import {
   onSnapshot,
   query,
   where,
-  orderBy,
-  getDocs,
+  type Unsubscribe,
 } from "firebase/firestore";
 import type { TripDocument, TripMember } from "@/types/trip";
 
 const TRIPS_COLLECTION = "trips";
 
 /**
- * Creates a new trip document in Firestore.
+ * Creates a new trip document in Firestore with indexed memberIds.
  */
 export async function createTrip(
-  tripData: Omit<TripDocument, "tripId" | "createdAt" | "totalExpensePaise"> & {
+  tripData: Omit<TripDocument, "tripId" | "createdAt" | "totalExpensePaise" | "memberIds"> & {
     tripId?: string;
   }
 ): Promise<string> {
   const tripId = tripData.tripId || `trip_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   const tripRef = doc(db, TRIPS_COLLECTION, tripId);
 
+  const memberIds = Array.from(new Set(tripData.members.map((m) => m.memberId).concat(tripData.createdBy)));
+
   const newTrip: TripDocument = {
     ...tripData,
     tripId,
+    memberIds,
     totalExpensePaise: 0,
     settlementStatus: "unsettled",
     createdAt: serverTimestamp() as any,
@@ -58,46 +60,62 @@ export async function getTrip(tripId: string): Promise<TripDocument | null> {
 export function subscribeToTrip(
   tripId: string,
   onUpdate: (trip: TripDocument | null) => void
-): () => void {
+): Unsubscribe {
   const tripRef = doc(db, TRIPS_COLLECTION, tripId);
-  return onSnapshot(tripRef, (snap) => {
-    if (snap.exists()) {
-      onUpdate(snap.data() as TripDocument);
-    } else {
+  return onSnapshot(
+    tripRef,
+    (snap) => {
+      if (snap.exists()) {
+        onUpdate(snap.data() as TripDocument);
+      } else {
+        onUpdate(null);
+      }
+    },
+    (error) => {
+      console.warn(`[Firestore] subscribeToTrip error for trip ${tripId}:`, error);
       onUpdate(null);
     }
-  });
+  );
 }
 
 /**
- * Subscribes to trips that a user participates in or created.
+ * Subscribes to trips that the authenticated user participates in.
+ * Uses `where("memberIds", "array-contains", userId)` to strictly comply with Firestore security rules.
  */
 export function subscribeToUserTrips(
   userId: string,
   onUpdate: (trips: TripDocument[]) => void
-): () => void {
+): Unsubscribe {
+  if (!userId) {
+    onUpdate([]);
+    return () => {};
+  }
+
   const tripsRef = collection(db, TRIPS_COLLECTION);
-  // Real-time listener for all user trips
-  return onSnapshot(tripsRef, (snap) => {
-    const trips: TripDocument[] = [];
-    snap.forEach((docSnap) => {
-      const trip = docSnap.data() as TripDocument;
-      // Filter if user is creator or member
-      const isMember = trip.members?.some((m) => m.memberId === userId);
-      const isCreator = trip.createdBy === userId;
-      if (isMember || isCreator) {
-        trips.push(trip);
-      }
-    });
-    onUpdate(trips);
-  });
+  // Indexed query matching security rule: request.auth.uid in resource.data.memberIds
+  const q = query(tripsRef, where("memberIds", "array-contains", userId));
+
+  return onSnapshot(
+    q,
+    (snap) => {
+      const trips: TripDocument[] = [];
+      snap.forEach((docSnap) => {
+        trips.push(docSnap.data() as TripDocument);
+      });
+      onUpdate(trips);
+    },
+    (error) => {
+      console.warn("[Firestore] subscribeToUserTrips error:", error);
+      onUpdate([]);
+    }
+  );
 }
 
 /**
- * Ensures a sample demo trip exists for instant testing if no trips are found.
+ * Ensures a sample demo trip exists for instant testing if no trips are found for the user.
  */
 export async function ensureDemoTrip(user: { uid: string; name: string; phone?: string }): Promise<TripDocument> {
-  const demoTripId = `demo_trip_${user.uid.slice(0, 6)}`;
+  const demoTripId = `demo_trip_${user.uid.slice(0, 8)}`;
   const existing = await getTrip(demoTripId);
   if (existing) return existing;
 
@@ -136,6 +154,7 @@ export async function ensureDemoTrip(user: { uid: string; name: string; phone?: 
     startDate: new Date().toISOString().split("T")[0],
     endDate: new Date(Date.now() + 3 * 86400000).toISOString().split("T")[0],
     members: defaultMembers,
+    memberIds: defaultMembers.map((m) => m.memberId),
     totalExpensePaise: 0,
     settlementStatus: "unsettled",
     createdBy: user.uid,
